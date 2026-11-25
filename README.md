@@ -285,8 +285,9 @@ make -C terraform teardown
 ```
 
 It deletes the root Application and the ApplicationSets without cascading, then the generated Applications
-layer by layer (apps, configs, then controllers in reverse dependency order), waits until every PVC is gone so no
-persistent disk keeps billing, and destroys the Terraform workspaces. `services` and `secret-manager` are kept.
+layer by layer (apps, configs, then controllers in reverse dependency order), deletes the PVCs that StatefulSets
+leave behind (their volume claim templates outlive them), waits until every PVC is gone so no persistent disk keeps
+billing, and destroys the Terraform workspaces. `services` and `secret-manager` are kept.
 
 ## Staging defaults vs. production
 

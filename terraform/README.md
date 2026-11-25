@@ -117,8 +117,9 @@ make teardown     # prompts before each destroy; AUTO_APPROVE=1 to skip prompts
 ```
 
 The script removes the root Application and the ApplicationSets without cascading, deletes the generated
-Applications layer by layer (apps, configs, then controllers in reverse dependency order), waits until every PVC is
-gone, then runs `terraform destroy` for argocd-bootstrap → cloud-storage → artifact-registry →
+Applications layer by layer (apps, configs, then controllers in reverse dependency order), deletes the PVCs that
+StatefulSets leave behind (for example `data-pyroscope-0`: volume claim templates outlive their StatefulSet), waits
+until every PVC is gone, then runs `terraform destroy` for argocd-bootstrap → cloud-storage → artifact-registry →
 kubernetes-engine → firewall → cloud-nat → vpc, and finally lists any leftover `pvc-*` disks or IPs.
 
 Applications are deleted with foreground cascading: each waits until all of its resources are gone. Before each

@@ -69,6 +69,9 @@ if gcloud container clusters describe "$CLUSTER" --location "$LOCATION" --projec
   done
   delete_applications -l layer=controllers
 
+  echo ">> Deleting PVCs that StatefulSets leave behind (volumeClaimTemplates outlive their StatefulSet)..."
+  kubectl delete pvc -A --all --wait=false
+
   echo ">> Waiting for all PVCs to be deleted (persistent disks released)..."
   for _ in $(seq 1 60); do
     left="$(kubectl get pvc -A --no-headers 2>/dev/null | wc -l | tr -d ' ')"
