@@ -1,0 +1,3482 @@
+{
+  "uid": "deus-traces",
+  "title": "Deus — Traces",
+  "description": "Distributed tracing analytics from the deus spans (LogsQL on VictoriaTraces): service map, endpoints, where the time goes inside a request, SQL and async deliveries, failures, hot spots and single traces.",
+  "tags": [
+    "deus",
+    "traces",
+    "custom"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "graphTooltip": 1,
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "1m",
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "label": "Service",
+        "type": "query",
+        "datasource": {
+          "type": "victoriametrics-logs-datasource",
+          "uid": "VictoriaTracesLogsQL"
+        },
+        "query": {
+          "type": "fieldValue",
+          "field": "resource_attr:service.name",
+          "query": "\"resource_attr:service.namespace\":=deus",
+          "limit": 200,
+          "refId": "service"
+        },
+        "definition": "resource_attr:service.name: \"resource_attr:service.namespace\":=deus",
+        "refresh": 2,
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "current": {
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        }
+      },
+      {
+        "name": "endpoint",
+        "label": "Endpoint (slowest first)",
+        "type": "query",
+        "datasource": {
+          "type": "victoriametrics-logs-datasource",
+          "uid": "VictoriaTracesLogsQL"
+        },
+        "query": {
+          "type": "fieldValue",
+          "field": "option",
+          "query": "\"resource_attr:service.namespace\":=deus \"resource_attr:service.name\":in($service) kind:=2 | stats by (name) quantile(0.95, duration) p95 | sort by (p95 desc) | limit 100 | math round(p95/1e6) as ms | format \"<ms> ms p95 · <name>\" as option",
+          "limit": 100,
+          "refId": "endpoint"
+        },
+        "definition": "option: endpoints by p95",
+        "regex": "/^(?<text>.* · (?<value>.+))$/",
+        "sort": 4,
+        "refresh": 2,
+        "multi": false,
+        "includeAll": false,
+        "allowCustomValue": true,
+        "current": {}
+      },
+      {
+        "name": "attribute",
+        "label": "Hot spots by",
+        "type": "custom",
+        "query": "route : span_attr:http.route,HTTP status : span_attr:http.response.status_code,pod : resource_attr:k8s.pod.name,node : resource_attr:k8s.node.name,version : resource_attr:service.version,caller : span_attr:user_agent.original",
+        "current": {
+          "selected": true,
+          "text": "route",
+          "value": "span_attr:http.route"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "route",
+            "value": "span_attr:http.route"
+          },
+          {
+            "selected": false,
+            "text": "HTTP status",
+            "value": "span_attr:http.response.status_code"
+          },
+          {
+            "selected": false,
+            "text": "pod",
+            "value": "resource_attr:k8s.pod.name"
+          },
+          {
+            "selected": false,
+            "text": "node",
+            "value": "resource_attr:k8s.node.name"
+          },
+          {
+            "selected": false,
+            "text": "version",
+            "value": "resource_attr:service.version"
+          },
+          {
+            "selected": false,
+            "text": "caller",
+            "value": "span_attr:user_agent.original"
+          }
+        ]
+      },
+      {
+        "name": "min_duration",
+        "label": "Trace duration over",
+        "type": "custom",
+        "query": "any : 0,100ms : 100000000,250ms : 250000000,500ms : 500000000,1s : 1000000000,2s : 2000000000",
+        "current": {
+          "selected": true,
+          "text": "any",
+          "value": "0"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "any",
+            "value": "0"
+          },
+          {
+            "selected": false,
+            "text": "100ms",
+            "value": "100000000"
+          },
+          {
+            "selected": false,
+            "text": "250ms",
+            "value": "250000000"
+          },
+          {
+            "selected": false,
+            "text": "500ms",
+            "value": "500000000"
+          },
+          {
+            "selected": false,
+            "text": "1s",
+            "value": "1000000000"
+          },
+          {
+            "selected": false,
+            "text": "2s",
+            "value": "2000000000"
+          }
+        ]
+      },
+      {
+        "name": "failed",
+        "label": "Traces",
+        "type": "custom",
+        "query": "all : 0,with errors : 1",
+        "current": {
+          "selected": true,
+          "text": "all",
+          "value": "0"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "all",
+            "value": "0"
+          },
+          {
+            "selected": false,
+            "text": "with errors",
+            "value": "1"
+          }
+        ]
+      },
+      {
+        "name": "trace_id",
+        "label": "Trace ID",
+        "type": "textbox",
+        "query": "",
+        "current": {
+          "text": "",
+          "value": ""
+        }
+      }
+    ]
+  },
+  "links": [
+    {
+      "title": "Deus dashboards",
+      "type": "dashboards",
+      "tags": [
+        "deus"
+      ],
+      "asDropdown": true,
+      "includeVars": false,
+      "keepTime": true
+    },
+    {
+      "title": "Platform dashboards",
+      "type": "dashboards",
+      "tags": [
+        "platform"
+      ],
+      "asDropdown": true,
+      "includeVars": false,
+      "keepTime": true
+    },
+    {
+      "title": "Explore traces",
+      "type": "link",
+      "url": "/explore?left={\"datasource\":\"VictoriaTraces\"}",
+      "targetBlank": true
+    },
+    {
+      "title": "Explore logs",
+      "type": "link",
+      "url": "/explore?left={\"datasource\":\"VictoriaLogs\"}",
+      "targetBlank": true
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "name": "Rollouts",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "VictoriaMetrics"
+        },
+        "enable": true,
+        "iconColor": "blue",
+        "step": "1m",
+        "useValueForTime": false,
+        "expr": "(max by (namespace, replicaset, owner_name) (kube_replicaset_owner{namespace=~\"(.+-)?deus\", owner_kind=\"Deployment\"}) unless max by (namespace, replicaset, owner_name) (kube_replicaset_owner{namespace=~\"(.+-)?deus\", owner_kind=\"Deployment\"} offset 1m)",
+        "titleFormat": "Rollout {{owner_name}}",
+        "textFormat": "New ReplicaSet {{replicaset}}: the pod template changed (image, env or resources)"
+      },
+      {
+        "name": "Critical alerts",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "VictoriaMetrics"
+        },
+        "enable": true,
+        "iconColor": "red",
+        "step": "1m",
+        "useValueForTime": false,
+        "expr": "max by (alertname, target, slo, deployment) (ALERTS{alertname=~\"Deus.*\", alertstate=\"firing\", severity=\"critical\"})",
+        "titleFormat": "{{alertname}}",
+        "textFormat": "{{target}}{{deployment}} {{slo}}"
+      },
+      {
+        "name": "Node restarts",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "VictoriaMetrics"
+        },
+        "enable": true,
+        "iconColor": "purple",
+        "step": "1m",
+        "useValueForTime": false,
+        "expr": "(max by (node) (label_replace(node_boot_time_seconds, \"internal_ip\", \"$1\", \"instance\", \"(.+):[0-9]+\") * on (internal_ip) group_left (node) max by (internal_ip, node) (kube_node_info)) > max_over_time((max by (node) (label_replace(node_boot_time_seconds, \"internal_ip\", \"$1\", \"instance\", \"(.+):[0-9]+\") * on (internal_ip) group_left (node) max by (internal_ip, node) (kube_node_info)))[30m:1m] offset 1m)) * on (node) group_left (label_cloud_google_com_gke_nodepool, label_cloud_google_com_gke_provisioning) max by (node, label_cloud_google_com_gke_nodepool, label_cloud_google_com_gke_provisioning) (kube_node_labels)",
+        "titleFormat": "Node restarted: {{node}}",
+        "textFormat": "Pool {{label_cloud_google_com_gke_nodepool}} ({{label_cloud_google_com_gke_provisioning}}): spot preemption, upgrade or repair; its pods were rescheduled"
+      },
+      {
+        "name": "Container restarts",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "VictoriaMetrics"
+        },
+        "enable": true,
+        "iconColor": "orange",
+        "step": "1m",
+        "useValueForTime": false,
+        "expr": "(changes(kube_pod_container_status_restarts_total{namespace=~\"(.+-)?deus\"}[1m]) > 0) * on (namespace, pod, container) group_left (reason) max by (namespace, pod, container, reason) (kube_pod_container_status_last_terminated_reason{namespace=~\"(.+-)?deus\"})",
+        "titleFormat": "Restart {{pod}}: {{reason}}",
+        "textFormat": "Container {{container}} (OOMKilled: memory limit reached)"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "row",
+      "title": "Overview — $service",
+      "collapsed": false,
+      "panels": [],
+      "id": 1,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Requests / s",
+      "description": "Server spans per second: every request handled by the selected services, /internal calls included.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "noValue": "–"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus \"resource_attr:service.name\":in($service) kind:=2 | stats rate() rps",
+          "queryType": "stats",
+          "editorMode": "code",
+          "refId": "A"
+        }
+      ],
+      "id": 2,
+      "gridPos": {
+        "x": 0,
+        "y": 1,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "5xx",
+      "description": "Share of server spans answered with a 5xx.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.5
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "noValue": "–"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus \"resource_attr:service.name\":in($service) kind:=2 | stats count() calls, count() if (\"span_attr:http.response.status_code\":~\"^5\") failed | math failed*100/calls as pct_5xx | fields pct_5xx",
+          "queryType": "stats",
+          "editorMode": "code",
+          "refId": "A"
+        }
+      ],
+      "id": 3,
+      "gridPos": {
+        "x": 4,
+        "y": 1,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "p95 latency",
+      "description": "95th percentile duration of the server spans.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ns",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "noValue": "–"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus \"resource_attr:service.name\":in($service) kind:=2 | stats quantile(0.95, duration) p95",
+          "queryType": "stats",
+          "editorMode": "code",
+          "refId": "A"
+        }
+      ],
+      "id": 4,
+      "gridPos": {
+        "x": 8,
+        "y": 1,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "p99 latency",
+      "description": "99th percentile duration of the server spans: the slow tail behind p95. The Slowest requests table below lists those traces.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ns",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "noValue": "–"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus \"resource_attr:service.name\":in($service) kind:=2 | stats quantile(0.99, duration) p99",
+          "queryType": "stats",
+          "editorMode": "code",
+          "refId": "A"
+        }
+      ],
+      "id": 5,
+      "gridPos": {
+        "x": 12,
+        "y": 1,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Requests slower than 1s",
+      "description": "Server spans that took more than one second: what users notice as slow. The Endpoints table and Where the time goes show which endpoint and why.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "noValue": "–"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus \"resource_attr:service.name\":in($service) kind:=2 duration:>1000000000 | stats count() slow",
+          "queryType": "stats",
+          "editorMode": "code",
+          "refId": "A"
+        }
+      ],
+      "id": 6,
+      "gridPos": {
+        "x": 16,
+        "y": 1,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Failed operations",
+      "description": "Spans with an error status, 4xx answers seen by a client excluded: 5xx, database errors, failed outbox deliveries.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "noValue": "–"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus \"resource_attr:service.name\":in($service) status_code:=2 -\"span_attr:http.response.status_code\":~\"^4\" | stats count() failed",
+          "queryType": "stats",
+          "editorMode": "code",
+          "refId": "A"
+        }
+      ],
+      "id": 7,
+      "gridPos": {
+        "x": 20,
+        "y": 1,
+        "w": 4,
+        "h": 4
+      }
+    },
+    {
+      "type": "row",
+      "title": "Service map",
+      "collapsed": false,
+      "panels": [],
+      "id": 8,
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "nodeGraph",
+      "title": "Service map",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "description": "Clients that start traces (the dashboard in the browser), the Gateway kgateway-public, every service and PostgreSQL: requests per second in the circle, p95 and the failed share below the name, successful (green) and failed (red) spans in the ring. An arrow joins a calling span to the span it caused in another service; hover it for calls per second, p95 as the caller sees it and the failed share. Client errors (4xx) do not count as failed.",
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "(\"resource_attr:service.namespace\":=deus or \"resource_attr:service.namespace\":=kgateway-system) (kind:=2 or kind:=4 or (kind:=3 \"span_attr:db.system.name\":*) or (parent_span_id:\"\" -kind:=2 -\"span_attr:db.system.name\":*)) | copy \"resource_attr:service.name\" as id | copy \"span_attr:db.system.name\" as db_system, \"span_attr:server.address\" as db_host | format if (kind:=3 db_system:*) \"<db_system>\" as id | copy id as title | format if (kind:=3 db_system:*) \"<db_host> (<db_system>)\" as title | stats by (id, title) rate() rps, quantile(0.95, duration) p95, count() requests, count() if (status_code:=2 -\"span_attr:http.response.status_code\":~\"^4\" -\"span_attr:http.status_code\":~\"^4\") failed | math round(p95/1e6, 0.1) as p95_ms, round(failed*100/requests, 0.01) as failed_pct | format \"p95 <p95_ms> ms · <failed_pct>% failed\" as subtitle | stats by (id, title, subtitle) max(rps) mainstat, max(requests) detail__requests, max(failed) detail__failed | math (detail__requests-detail__failed)/detail__requests as arc__success, detail__failed/detail__requests as arc__errors",
+          "queryType": "stats",
+          "editorMode": "code",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "(\"resource_attr:service.namespace\":=deus or \"resource_attr:service.namespace\":=kgateway-system) kind:=2 parent_span_id:* | copy \"resource_attr:service.name\" as target | join by (trace_id, parent_span_id) ((\"resource_attr:service.namespace\":=deus or \"resource_attr:service.namespace\":=kgateway-system) (kind:=3 or (\"resource_attr:service.namespace\":=kgateway-system kind:=2)) -\"span_attr:db.system.name\":* | copy span_id as parent_span_id, \"resource_attr:service.name\" as source, duration as call_duration | fields trace_id, parent_span_id, source, call_duration) | filter source:* -source:eq_field(target) | union (\"resource_attr:service.namespace\":=deus kind:=3 \"span_attr:db.system.name\":* | copy \"resource_attr:service.name\" as source, \"span_attr:db.system.name\" as target, duration as call_duration) | format \"<source>→<target>\" as id | stats by (id, source, target) rate() mainstat, quantile(0.95, call_duration) p95, count() detail__calls, count() if (status_code:=2 -\"span_attr:http.response.status_code\":~\"^4\" -\"span_attr:http.status_code\":~\"^4\") detail__failed | math round(p95/1e6, 0.1) as detail__p95_ms, round(detail__failed*100/detail__calls, 0.01) as detail__failed_pct | delete p95",
+          "queryType": "stats",
+          "editorMode": "code",
+          "refId": "B"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns",
+            "valueLabel": "__name__"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {},
+          "filter": {
+            "id": "byRefId",
+            "options": "A"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {},
+          "filter": {
+            "id": "byRefId",
+            "options": "B"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "renameByName": {
+              "mainstat": "Requests per second",
+              "arc__success": "Success",
+              "arc__errors": "Failed",
+              "detail__requests": "Requests",
+              "detail__failed": "Failed requests",
+              "detail__calls": "Calls",
+              "detail__p95_ms": "p95 (ms)",
+              "detail__failed_pct": "Failed (%)"
+            }
+          }
+        }
+      ],
+      "options": {
+        "nodes": {
+          "mainStatUnit": "reqps",
+          "arcs": [
+            {
+              "field": "arc__success",
+              "color": "green"
+            },
+            {
+              "field": "arc__errors",
+              "color": "red"
+            }
+          ]
+        },
+        "edges": {
+          "mainStatUnit": "reqps"
+        }
+      },
+      "id": 9,
+      "gridPos": {
+        "x": 0,
+        "y": 6,
+        "w": 16,
+        "h": 15
+      }
+    },
+    {
+      "type": "table",
+      "title": "Calls to dependencies",
+      "description": "Client spans by caller and callee: other services' /internal endpoints and PostgreSQL. p95 includes the network and the callee's work.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Calls"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Failed"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 55
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "4xx"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 45
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p95"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ns"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 70
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Calls",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns",
+            "valueLabel": "__name__"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "service": 0,
+              "peer": 1,
+              "calls": 2,
+              "failed": 3,
+              "e4": 4,
+              "p95": 5
+            },
+            "renameByName": {
+              "service": "Caller",
+              "peer": "Callee",
+              "calls": "Calls",
+              "failed": "Failed",
+              "e4": "4xx",
+              "p95": "p95"
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus kind:=3 | copy \"resource_attr:service.name\" as service | copy \"span_attr:server.address\" as peer | replace_regexp (\"\\\\.[a-z0-9-]+\\\\.svc(\\\\.cluster\\\\.local)?\\\\.?$\", \"\") at peer | copy \"span_attr:db.system.name\" as db_system, \"span_attr:server.address\" as db_host | format if (db_system:*) \"<db_host> (<db_system>)\" as peer | filter peer:* | stats by (service, peer) count() calls, count() if (status_code:=2 -\"span_attr:http.response.status_code\":~\"^4\") failed, count() if (\"span_attr:http.response.status_code\":~\"^4\") e4, quantile(0.95, duration) p95 | sort by (calls desc) | limit 50",
+          "queryType": "stats",
+          "editorMode": "code",
+          "refId": "A"
+        }
+      ],
+      "id": 10,
+      "gridPos": {
+        "x": 16,
+        "y": 6,
+        "w": 8,
+        "h": 15
+      }
+    },
+    {
+      "type": "row",
+      "title": "Endpoints — $service",
+      "collapsed": false,
+      "panels": [],
+      "id": 11,
+      "gridPos": {
+        "x": 0,
+        "y": 21,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "table",
+      "title": "Endpoints (server spans)",
+      "description": "Every endpoint of the selected services, the ones using the most server time first. Time share: its part of all server time (calls × duration), what to optimise first. DB share: its part spent in PostgreSQL queries of the same service. Slowest trace opens that call below; 4xx are the caller's mistakes or business rules.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Endpoint"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Break down this endpoint (Where the time goes)",
+                    "url": "/d/deus-traces/deus-traces?var-service=${__data.fields.Service}&var-endpoint=${__value.raw}&${attribute:queryparam}&${min_duration:queryparam}&${__url_time_range}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Service"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open Deus — Service",
+                    "url": "/d/deus-service/deus-service?var-service=${__value.raw}&${__url_time_range}"
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Calls"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 70
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Req/min"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 75
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "5xx %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.width",
+                "value": 75
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "–",
+                        "index": 0
+                      }
+                    }
+                  },
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "nan",
+                      "result": {
+                        "text": "–",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "text",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 0.001
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "4xx %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.width",
+                "value": 75
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "–",
+                        "index": 0
+                      }
+                    }
+                  },
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "nan",
+                      "result": {
+                        "text": "–",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "text",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 0.001
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p50"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ns"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p95"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ns"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p99"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ns"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Max"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ns"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time share"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 100
+              },
+              {
+                "id": "custom.width",
+                "value": 140
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "–",
+                        "index": 0
+                      }
+                    }
+                  },
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "nan",
+                      "result": {
+                        "text": "–",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic",
+                  "valueDisplayMode": "text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "DB share"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 100
+              },
+              {
+                "id": "custom.width",
+                "value": 140
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "–",
+                        "index": 0
+                      }
+                    }
+                  },
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "nan",
+                      "result": {
+                        "text": "–",
+                        "index": 1
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic",
+                  "valueDisplayMode": "text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Slowest trace"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open this trace in Explore",
+                    "url": "/explore?left={\"datasource\":\"VictoriaTraces\",\"queries\":[{\"refId\":\"A\",\"datasource\":{\"type\":\"jaeger\",\"uid\":\"VictoriaTraces\"},\"query\":\"${__value.raw}\"}],\"range\":{\"from\":\"${__from}\",\"to\":\"${__to}\"}}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 270
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Last call"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeFromNow"
+              },
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Time share",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns",
+            "valueLabel": "__name__"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "srv": true,
+              "db": true
+            },
+            "indexByName": {
+              "service": 0,
+              "name": 1,
+              "calls": 2,
+              "rpm": 3,
+              "pct_5xx": 4,
+              "pct_4xx": 5,
+              "p50": 6,
+              "p95": 7,
+              "p99": 8,
+              "slowest": 9,
+              "time_share": 10,
+              "db_share": 11,
+              "slowest_trace": 12,
+              "last_ms": 13
+            },
+            "renameByName": {
+              "service": "Service",
+              "name": "Endpoint",
+              "calls": "Calls",
+              "rpm": "Req/min",
+              "pct_5xx": "5xx %",
+              "pct_4xx": "4xx %",
+              "p50": "p50",
+              "p95": "p95",
+              "p99": "p99",
+              "slowest": "Max",
+              "time_share": "Time share",
+              "db_share": "DB share",
+              "slowest_trace": "Slowest trace",
+              "last_ms": "Last call"
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus \"resource_attr:service.name\":in($service) kind:=2 | copy \"resource_attr:service.name\" as service | stats by (service, name) count() calls, rate() rps, count() if (\"span_attr:http.response.status_code\":~\"^5\") e5, count() if (\"span_attr:http.response.status_code\":~\"^4\") e4, quantile(0.5, duration) p50, quantile(0.95, duration) p95, quantile(0.99, duration) p99, max(duration) slowest, sum(duration) total, field_max(duration, trace_id) slowest_trace, max(start_time_unix_nano) last_ns | total_stats sum(total) all_total | math round(e5*100/calls, 0.01) as pct_5xx, round(e4*100/calls, 0.01) as pct_4xx, rps*60 as rpm, round(total*100/all_total, 0.1) as time_share, round(last_ns/1e6) as last_ms | stats by (service, name, slowest_trace) max(calls) calls, max(rpm) rpm, max(pct_5xx) pct_5xx, max(pct_4xx) pct_4xx, max(p50) p50, max(p95) p95, max(p99) p99, max(slowest) slowest, max(time_share) time_share, max(last_ms) last_ms | sort by (time_share desc) | limit 100",
+          "queryType": "stats",
+          "editorMode": "code",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus \"resource_attr:service.name\":in($service) kind:=2 | copy \"resource_attr:service.name\" as service | stats by (trace_id, service, name) sum(duration) srv | join by (trace_id, service) (\"resource_attr:service.namespace\":=deus kind:=3 \"span_attr:db.system.name\":=postgresql | copy \"resource_attr:service.name\" as service | stats by (trace_id, service) sum(duration) db) | stats by (service, name) sum(srv) srv, sum(db) db | math round(db*100/srv, 0.1) as db_share",
+          "queryType": "stats",
+          "editorMode": "code",
+          "refId": "B"
+        }
+      ],
+      "id": 12,
+      "gridPos": {
+        "x": 0,
+        "y": 22,
+        "w": 24,
+        "h": 11
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "p95 by endpoint",
+      "description": "95th percentile duration of each endpoint's server spans.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ns",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "drawStyle": "line",
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus \"resource_attr:service.name\":in($service) kind:=2 | stats by (name) quantile(0.95, duration) p95",
+          "queryType": "statsRange",
+          "editorMode": "code",
+          "refId": "A",
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "id": 13,
+      "gridPos": {
+        "x": 0,
+        "y": 33,
+        "w": 12,
+        "h": 8
+      },
+      "interval": "1m"
+    },
+    {
+      "type": "timeseries",
+      "title": "5xx by endpoint",
+      "description": "Server spans answered with a 5xx per interval, by endpoint.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 60,
+            "showPoints": "never",
+            "drawStyle": "bars",
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "sum"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus \"resource_attr:service.name\":in($service) kind:=2 \"span_attr:http.response.status_code\":~\"^5\" | stats by (name) count() failed",
+          "queryType": "statsRange",
+          "editorMode": "code",
+          "refId": "A",
+          "legendFormat": "{{name}}"
+        }
+      ],
+      "id": 14,
+      "gridPos": {
+        "x": 12,
+        "y": 33,
+        "w": 12,
+        "h": 8
+      },
+      "interval": "1m"
+    },
+    {
+      "type": "row",
+      "title": "Traces",
+      "collapsed": false,
+      "panels": [],
+      "id": 15,
+      "gridPos": {
+        "x": 0,
+        "y": 41,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "table",
+      "title": "Traces",
+      "description": "One row per trace, newest first, like a trace search: the root is the page the user opened in the browser (pageload or navigation, with its API requests below), or the first API request when the caller is not traced (k6). Page is the dashboard page the request came from (empty for k6). Click the trace ID or the name to open the trace in Explore: the waterfall from the browser through the gateway to the services and the database, with links to each span's logs and metrics. Paste a trace ID in Trace ID to find one trace in the whole time range; otherwise filter with Service, Trace duration over and Traces.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Trace ID"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open this trace in Explore",
+                    "url": "/explore?left={\"datasource\":\"VictoriaTraces\",\"queries\":[{\"refId\":\"A\",\"datasource\":{\"type\":\"jaeger\",\"uid\":\"VictoriaTraces\"},\"query\":\"${__value.raw}\"}],\"range\":{\"from\":\"${__from}\",\"to\":\"${__to}\"}}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 270
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Start time"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsLocal"
+              },
+              {
+                "id": "custom.width",
+                "value": 165
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Name"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open this trace in Explore",
+                    "url": "/explore?left={\"datasource\":\"VictoriaTraces\",\"queries\":[{\"refId\":\"A\",\"datasource\":{\"type\":\"jaeger\",\"uid\":\"VictoriaTraces\"},\"query\":\"${__data.fields[\"Trace ID\"]}\"}],\"range\":{\"from\":\"${__from}\",\"to\":\"${__to}\"}}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Service"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Page"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 170
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Duration"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ns"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Spans"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 70
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Services"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Errors"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 70
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Start time",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns",
+            "valueLabel": "__name__"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "trace_id": 0,
+              "started_ms": 1,
+              "service": 2,
+              "root": 3,
+              "page": 4,
+              "spans": 5,
+              "services": 6,
+              "errors": 7,
+              "took": 8
+            },
+            "renameByName": {
+              "trace_id": "Trace ID",
+              "started_ms": "Start time",
+              "service": "Service",
+              "root": "Name",
+              "page": "Page",
+              "spans": "Spans",
+              "services": "Services",
+              "errors": "Errors",
+              "took": "Duration"
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus trace_id:${trace_id:raw}* | copy \"resource_attr:service.name\" as svc, \"span_attr:app.route\" as page | stats by (trace_id) min(start_time_unix_nano) started_ns, max(end_time_unix_nano) ended_ns, field_min(start_time_unix_nano, svc) if (parent_span_id:=\"\" or kind:=2) service, field_min(start_time_unix_nano, name) if (parent_span_id:=\"\" or kind:=2) root, field_min(start_time_unix_nano, page) if (parent_span_id:=\"\" or kind:=2) page, count() spans, count_uniq(svc) services, count() if (status_code:=2 -\"span_attr:http.response.status_code\":~\"^4\") errors, count() if (\"resource_attr:service.name\":in($service)) touched | math round(started_ns/1e6) as started_ms, ended_ns-started_ns as took | filter touched:>0 took:>=${min_duration:raw} errors:>=${failed:raw} | stats by (trace_id, service, root, page) max(started_ms) started_ms, max(took) took, max(spans) spans, max(services) services, max(errors) errors | sort by (started_ms desc) | limit 200",
+          "queryType": "stats",
+          "editorMode": "code",
+          "refId": "A"
+        }
+      ],
+      "id": 16,
+      "gridPos": {
+        "x": 0,
+        "y": 42,
+        "w": 24,
+        "h": 16
+      }
+    },
+    {
+      "type": "table",
+      "title": "Slow traces (≥ 1s)",
+      "description": "Traces that took one second or more, slowest first, with the same columns and links as Traces. Follows Service, Traces and Trace ID; the one-second threshold is fixed.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Trace ID"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open this trace in Explore",
+                    "url": "/explore?left={\"datasource\":\"VictoriaTraces\",\"queries\":[{\"refId\":\"A\",\"datasource\":{\"type\":\"jaeger\",\"uid\":\"VictoriaTraces\"},\"query\":\"${__value.raw}\"}],\"range\":{\"from\":\"${__from}\",\"to\":\"${__to}\"}}",
+                    "targetBlank": true
+                  }
+                ]
+              },
+              {
+                "id": "custom.width",
+                "value": 270
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Start time"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsLocal"
+              },
+              {
+                "id": "custom.width",
+                "value": 165
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Name"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Open this trace in Explore",
+                    "url": "/explore?left={\"datasource\":\"VictoriaTraces\",\"queries\":[{\"refId\":\"A\",\"datasource\":{\"type\":\"jaeger\",\"uid\":\"VictoriaTraces\"},\"query\":\"${__data.fields[\"Trace ID\"]}\"}],\"range\":{\"from\":\"${__from}\",\"to\":\"${__to}\"}}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Service"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 120
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Page"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 170
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Duration"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ns"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Spans"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 70
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Services"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Errors"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 70
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Duration",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns",
+            "valueLabel": "__name__"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "trace_id": 0,
+              "started_ms": 1,
+              "service": 2,
+              "root": 3,
+              "page": 4,
+              "spans": 5,
+              "services": 6,
+              "errors": 7,
+              "took": 8
+            },
+            "renameByName": {
+              "trace_id": "Trace ID",
+              "started_ms": "Start time",
+              "service": "Service",
+              "root": "Name",
+              "page": "Page",
+              "spans": "Spans",
+              "services": "Services",
+              "errors": "Errors",
+              "took": "Duration"
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus trace_id:${trace_id:raw}* | copy \"resource_attr:service.name\" as svc, \"span_attr:app.route\" as page | stats by (trace_id) min(start_time_unix_nano) started_ns, max(end_time_unix_nano) ended_ns, field_min(start_time_unix_nano, svc) if (parent_span_id:=\"\" or kind:=2) service, field_min(start_time_unix_nano, name) if (parent_span_id:=\"\" or kind:=2) root, field_min(start_time_unix_nano, page) if (parent_span_id:=\"\" or kind:=2) page, count() spans, count_uniq(svc) services, count() if (status_code:=2 -\"span_attr:http.response.status_code\":~\"^4\") errors, count() if (\"resource_attr:service.name\":in($service)) touched | math round(started_ns/1e6) as started_ms, ended_ns-started_ns as took | filter touched:>0 took:>=1000000000 errors:>=${failed:raw} | stats by (trace_id, service, root, page) max(started_ms) started_ms, max(took) took, max(spans) spans, max(services) services, max(errors) errors | sort by (took desc) | limit 200",
+          "queryType": "stats",
+          "editorMode": "code",
+          "refId": "A"
+        }
+      ],
+      "id": 17,
+      "gridPos": {
+        "x": 0,
+        "y": 58,
+        "w": 24,
+        "h": 10
+      }
+    },
+    {
+      "type": "row",
+      "title": "Where the time goes — $endpoint",
+      "collapsed": false,
+      "panels": [],
+      "id": 18,
+      "gridPos": {
+        "x": 0,
+        "y": 68,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "table",
+      "title": "Operations in $endpoint traces",
+      "description": "Every span of the traces that went through the selected endpoint, across all services, by total time. Spans nest (a client call contains the server span it calls), so read it top-down rather than adding it up. Async deliveries run after the response.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Share of endpoint time"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "min",
+                "value": 0
+              },
+              {
+                "id": "max",
+                "value": 100
+              },
+              {
+                "id": "custom.width",
+                "value": 220
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "gauge",
+                  "mode": "basic",
+                  "valueDisplayMode": "text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Service"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Calls"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Failed"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Avg"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ns"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p95"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ns"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Share of endpoint time",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns",
+            "valueLabel": "__name__"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "total": true,
+              "root_total": true
+            },
+            "indexByName": {
+              "service": 0,
+              "operation": 1,
+              "time_pct": 2,
+              "calls": 3,
+              "failed": 4,
+              "avg": 5,
+              "p95": 6
+            },
+            "renameByName": {
+              "service": "Service",
+              "operation": "Operation",
+              "time_pct": "Share of endpoint time",
+              "calls": "Calls",
+              "failed": "Failed",
+              "avg": "Avg",
+              "p95": "p95"
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus trace_id:in(\"resource_attr:service.namespace\":=deus kind:=2 name:=\"${endpoint:raw}\" | fields trace_id) | copy \"resource_attr:service.name\" as service | copy \"span_attr:db.query.text\" as sql | replace_regexp (\"[ \\t\\n]+\", \" \") at sql | format \"<name>\" as operation | format if (sql:*) \"SQL <sql>\" as operation | stats by (service, operation) count() calls, count() if (status_code:=2 -\"span_attr:http.response.status_code\":~\"^4\") failed, quantile(0.95, duration) p95, sum(duration) total | total_stats max(total) root_total | math round(total*100/root_total, 0.1) as time_pct, total/calls as avg | sort by (total desc) | limit 40",
+          "queryType": "stats",
+          "editorMode": "code",
+          "refId": "A"
+        }
+      ],
+      "id": 19,
+      "gridPos": {
+        "x": 0,
+        "y": 69,
+        "w": 24,
+        "h": 11
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "p95 by operation in $endpoint traces",
+      "description": "A step in one operation shows where a slowdown of the endpoint comes from.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ns",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "drawStyle": "line",
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus trace_id:in(\"resource_attr:service.namespace\":=deus kind:=2 name:=\"${endpoint:raw}\" | fields trace_id) | copy \"resource_attr:service.name\" as service | copy \"span_attr:db.query.text\" as sql | replace_regexp (\"[ \\t\\n]+\", \" \") at sql | format \"<name>\" as operation | format if (sql:*) \"SQL <sql>\" as operation | stats by (service, operation) quantile(0.95, duration) p95",
+          "queryType": "statsRange",
+          "editorMode": "code",
+          "refId": "A",
+          "legendFormat": "{{service}}: {{operation}}"
+        }
+      ],
+      "id": 20,
+      "gridPos": {
+        "x": 0,
+        "y": 80,
+        "w": 12,
+        "h": 9
+      },
+      "interval": "1m"
+    },
+    {
+      "type": "timeseries",
+      "title": "Failed operations in $endpoint traces",
+      "description": "The operation that fails first is usually the cause; the spans above it fail because of it.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 60,
+            "showPoints": "never",
+            "drawStyle": "bars",
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "sum"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus trace_id:in(\"resource_attr:service.namespace\":=deus kind:=2 name:=\"${endpoint:raw}\" | fields trace_id) status_code:=2 -\"span_attr:http.response.status_code\":~\"^4\" | copy \"resource_attr:service.name\" as service | copy \"span_attr:db.query.text\" as sql | replace_regexp (\"[ \\t\\n]+\", \" \") at sql | format \"<name>\" as operation | format if (sql:*) \"SQL <sql>\" as operation | stats by (service, operation) count() failed",
+          "queryType": "statsRange",
+          "editorMode": "code",
+          "refId": "A",
+          "legendFormat": "{{service}}: {{operation}}"
+        }
+      ],
+      "id": 21,
+      "gridPos": {
+        "x": 12,
+        "y": 80,
+        "w": 12,
+        "h": 9
+      },
+      "interval": "1m"
+    },
+    {
+      "type": "row",
+      "title": "Database and async deliveries, as the services see them — $service",
+      "collapsed": false,
+      "panels": [],
+      "id": 22,
+      "gridPos": {
+        "x": 0,
+        "y": 89,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "table",
+      "title": "SQL statements",
+      "description": "Client-side duration of each statement: network, lock waits and execution together. Compare with Top statements in the CloudNativePG dashboard (server side only): a gap means waiting outside PostgreSQL's execution, e.g. for a connection or a lock.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Service"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Calls"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Failed"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p50"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ns"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p95"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ns"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Max"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ns"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "p95",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns",
+            "valueLabel": "__name__"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "service": 0,
+              "sql": 1,
+              "calls": 2,
+              "failed": 3,
+              "p50": 4,
+              "p95": 5,
+              "slowest": 6
+            },
+            "renameByName": {
+              "service": "Service",
+              "sql": "Statement",
+              "calls": "Calls",
+              "failed": "Failed",
+              "p50": "p50",
+              "p95": "p95",
+              "slowest": "Max"
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus \"resource_attr:service.name\":in($service) \"span_attr:db.system.name\":=postgresql \"span_attr:db.query.text\":* | copy \"resource_attr:service.name\" as service | copy \"span_attr:db.query.text\" as sql | replace_regexp (\"[ \\t\\n]+\", \" \") at sql | stats by (service, sql) count() calls, count() if (status_code:=2) failed, quantile(0.5, duration) p50, quantile(0.95, duration) p95, max(duration) slowest | sort by (p95 desc) | limit 50",
+          "queryType": "stats",
+          "editorMode": "code",
+          "refId": "A"
+        }
+      ],
+      "id": 23,
+      "gridPos": {
+        "x": 0,
+        "y": 90,
+        "w": 24,
+        "h": 8
+      }
+    },
+    {
+      "type": "table",
+      "title": "Async deliveries",
+      "description": "Producer spans by destination: asynchronous deliveries such as the outbox relays. Each delivery continues the trace of the request that wrote the event, so a failed delivery opens on the original request.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Deliveries"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Failed"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Most attempts"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p95"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ns"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Deliveries",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns",
+            "valueLabel": "__name__"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "service": 0,
+              "topic": 1,
+              "deliveries": 2,
+              "failed": 3,
+              "attempts": 4,
+              "p95": 5
+            },
+            "renameByName": {
+              "service": "Service",
+              "topic": "Destination",
+              "deliveries": "Deliveries",
+              "failed": "Failed",
+              "attempts": "Most attempts",
+              "p95": "p95"
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus \"resource_attr:service.name\":in($service) kind:=4 | copy \"resource_attr:service.name\" as service | copy \"span_attr:messaging.destination.name\" as topic | stats by (service, topic) count() deliveries, count() if (status_code:=2 -\"span_attr:http.response.status_code\":~\"^4\") failed, max(\"span_attr:outbox.attempts\") attempts, quantile(0.95, duration) p95 | sort by (deliveries desc) | limit 30",
+          "queryType": "stats",
+          "editorMode": "code",
+          "refId": "A"
+        }
+      ],
+      "id": 24,
+      "gridPos": {
+        "x": 0,
+        "y": 98,
+        "w": 12,
+        "h": 8
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Async delivery p95 by destination",
+      "description": "Duration of the call to the receiving service per delivery; the delay before the delivery is in Deus — Service.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ns",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "drawStyle": "line",
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus \"resource_attr:service.name\":in($service) kind:=4 | copy \"span_attr:messaging.destination.name\" as topic | stats by (topic) quantile(0.95, duration) p95",
+          "queryType": "statsRange",
+          "editorMode": "code",
+          "refId": "A",
+          "legendFormat": "{{topic}}"
+        }
+      ],
+      "id": 25,
+      "gridPos": {
+        "x": 12,
+        "y": 98,
+        "w": 12,
+        "h": 8
+      },
+      "interval": "1m"
+    },
+    {
+      "type": "row",
+      "title": "Errors — $service",
+      "collapsed": false,
+      "panels": [],
+      "id": 26,
+      "gridPos": {
+        "x": 0,
+        "y": 106,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Failed spans by operation",
+      "description": "4xx answers seen by a client are not counted.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 60,
+            "showPoints": "never",
+            "drawStyle": "bars",
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "sum"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus \"resource_attr:service.name\":in($service) status_code:=2 -\"span_attr:http.response.status_code\":~\"^4\" | copy \"resource_attr:service.name\" as service | stats by (service, name) count() failed",
+          "queryType": "statsRange",
+          "editorMode": "code",
+          "refId": "A",
+          "legendFormat": "{{service}}: {{name}}"
+        }
+      ],
+      "id": 27,
+      "gridPos": {
+        "x": 0,
+        "y": 107,
+        "w": 12,
+        "h": 9
+      },
+      "interval": "1m"
+    },
+    {
+      "type": "table",
+      "title": "Top failure messages",
+      "description": "Span status messages: the exception of a 5xx, a database error or a failed delivery.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Count"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 70
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Count",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns",
+            "valueLabel": "__name__"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "service": 0,
+              "name": 1,
+              "status_message": 2,
+              "failed": 3
+            },
+            "renameByName": {
+              "service": "Service",
+              "name": "Operation",
+              "status_message": "Message",
+              "failed": "Count"
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus \"resource_attr:service.name\":in($service) status_code:=2 -\"span_attr:http.response.status_code\":~\"^4\" | copy \"resource_attr:service.name\" as service | stats by (service, name, status_message) count() failed | sort by (failed desc) | limit 30",
+          "queryType": "stats",
+          "editorMode": "code",
+          "refId": "A"
+        }
+      ],
+      "id": 28,
+      "gridPos": {
+        "x": 12,
+        "y": 107,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "type": "logs",
+      "title": "Latest failed spans",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "description": "Newest failed spans; expand one and use View trace (trace_id) to open the whole trace.",
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none",
+        "prettifyLogMessage": false
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus \"resource_attr:service.name\":in($service) status_code:=2 -\"span_attr:http.response.status_code\":~\"^4\" | copy \"resource_attr:service.name\" as service | math round(duration/1e6, 0.1) as ms | format \"<service> <name> (<ms> ms): <status_message>\" as _msg | format \"error\" as level",
+          "queryType": "instant",
+          "editorMode": "code",
+          "refId": "A",
+          "maxLines": 200
+        }
+      ],
+      "id": 29,
+      "gridPos": {
+        "x": 0,
+        "y": 116,
+        "w": 24,
+        "h": 9
+      }
+    },
+    {
+      "type": "row",
+      "title": "Hot spots — $service by ${attribute:text}",
+      "collapsed": false,
+      "panels": [],
+      "id": 30,
+      "gridPos": {
+        "x": 0,
+        "y": 125,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "table",
+      "title": "Requests by ${attribute:text}",
+      "description": "Server spans grouped by the selected attribute, worst first: one route, pod, node or version standing out points to the cause.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Calls"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "5xx %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 0.5
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p95"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ns"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Max"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ns"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "5xx %",
+            "desc": true
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {
+            "mode": "columns",
+            "valueLabel": "__name__"
+          }
+        },
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "e5": true
+            },
+            "indexByName": {
+              "value": 0,
+              "calls": 1,
+              "pct_5xx": 2,
+              "p95": 3,
+              "slowest": 4
+            },
+            "renameByName": {
+              "value": "Value",
+              "calls": "Calls",
+              "pct_5xx": "5xx %",
+              "p95": "p95",
+              "slowest": "Max"
+            }
+          }
+        }
+      ],
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus \"resource_attr:service.name\":in($service) kind:=2 \"${attribute:raw}\":* | copy \"resource_attr:service.name\" as service | copy \"${attribute:raw}\" as value | stats by (value) count() calls, count() if (\"span_attr:http.response.status_code\":~\"^5\") e5, quantile(0.95, duration) p95, max(duration) slowest | math round(e5*100/calls, 0.01) as pct_5xx | sort by (pct_5xx desc, p95 desc) | limit 30",
+          "queryType": "stats",
+          "editorMode": "code",
+          "refId": "A"
+        }
+      ],
+      "id": 31,
+      "gridPos": {
+        "x": 0,
+        "y": 126,
+        "w": 12,
+        "h": 9
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "5xx by ${attribute:text}",
+      "description": "Requests answered with a 5xx per interval, split by the attribute chosen in Hot spots by: whether failures concentrate on one route, pod, node or version.",
+      "datasource": {
+        "type": "victoriametrics-logs-datasource",
+        "uid": "VictoriaTracesLogsQL"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 60,
+            "showPoints": "never",
+            "drawStyle": "bars",
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "sum"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "victoriametrics-logs-datasource",
+            "uid": "VictoriaTracesLogsQL"
+          },
+          "expr": "\"resource_attr:service.namespace\":=deus \"resource_attr:service.name\":in($service) kind:=2 \"${attribute:raw}\":* \"span_attr:http.response.status_code\":~\"^5\" | copy \"${attribute:raw}\" as value | stats by (value) count() failed",
+          "queryType": "statsRange",
+          "editorMode": "code",
+          "refId": "A",
+          "legendFormat": "{{value}}"
+        }
+      ],
+      "id": 32,
+      "gridPos": {
+        "x": 12,
+        "y": 126,
+        "w": 12,
+        "h": 9
+      },
+      "interval": "1m"
+    }
+  ]
+}

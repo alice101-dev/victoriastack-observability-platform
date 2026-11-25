@@ -1,0 +1,23 @@
+pyroscope:
+  podAnnotations: {}
+  extraArgs:
+    log.level: info
+    metastore.min-ready-duration: 0s
+    segment-writer.min-ready-duration: 0s
+  persistence:
+    enabled: true
+    storageClassName: standard-rwo
+    size: 5Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 1Gi
+  structuredConfig:
+    storage:
+      backend: gcs
+    limits:
+      retention_period: 30d
+alloy:
+  enabled: false

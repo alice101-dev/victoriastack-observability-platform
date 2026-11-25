@@ -1,0 +1,56 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMPodScrape
+metadata:
+  name: pyroscope
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pyroscope
+      app.kubernetes.io/instance: pyroscope
+  podMetricsEndpoints:
+    - port: http2
+---
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  name: pyroscope
+spec:
+  groups:
+    - name: pyroscope
+      rules:
+        - alert: PyroscopeDown
+          expr: absent(up{job="monitoring/pyroscope"} == 1)
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: Pyroscope is not up
+            description: The services cannot deliver CPU profiles; each one logs a WARN and drops profiles until Pyroscope is back. Check the pyroscope StatefulSet in monitoring.
+            runbook_url: https://github.com/alice101-dev/victoriastack-observability-platform/blob/main/docs/runbooks/observability.md#pyroscopedown
+        - alert: PyroscopePushFailing
+          expr: sum(rate(pyroscope_request_duration_seconds_count{job="monitoring/pyroscope", route="push_v1_pusherservice_push", status_code!~"2.."}[5m])) > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pyroscope rejects {{ $value | humanize }} profile pushes/s"
+            description: Profile uploads from the services fail on the Pyroscope side; those profiles are lost.
+            runbook_url: https://github.com/alice101-dev/victoriastack-observability-platform/blob/main/docs/runbooks/observability.md#pyroscopepushfailing
+        - alert: PyroscopeDiscardingProfiles
+          expr: sum by (reason) (rate(pyroscope_discarded_samples_total{job="monitoring/pyroscope"}[5m])) > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pyroscope discards profile samples: {{ $labels.reason }}"
+            description: Pyroscope accepts the push but drops samples that break a limit (labels, size, age).
+            runbook_url: https://github.com/alice101-dev/victoriastack-observability-platform/blob/main/docs/runbooks/observability.md#pyroscopediscardingprofiles
+        - alert: PyroscopeObjectStorageFailing
+          expr: sum by (operation) (rate(objstore_bucket_operation_failures_total{job="monitoring/pyroscope", operation="upload"}[5m])) > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: Pyroscope fails to write profiles to the GCS bucket
+            description: Segments cannot be written to object storage, so pushes are refused. Usually missing bucket permissions for the pyroscope ServiceAccount (Workload Identity) or a missing bucket.
+            runbook_url: https://github.com/alice101-dev/victoriastack-observability-platform/blob/main/docs/runbooks/observability.md#pyroscopeobjectstoragefailing

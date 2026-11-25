@@ -1,0 +1,2 @@
+requires: k8s-events
+namespace: monitoring

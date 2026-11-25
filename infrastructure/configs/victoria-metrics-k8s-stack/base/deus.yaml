@@ -1,0 +1,1590 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMRule
+metadata:
+  name: deus
+  namespace: monitoring
+spec:
+  groups:
+    - name: deus-slo-sli
+      interval: 30s
+      rules:
+        - record: slo:objective:ratio
+          expr: |
+            0 * sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[5m]), "target", "$1", "service_name", "(.+)")) + 0.995
+          labels:
+            kind: service
+            slo: availability
+        - record: slo:sli_threshold:seconds
+          expr: |
+            0 * sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[5m]), "target", "$1", "service_name", "(.+)")) + 0
+          labels:
+            kind: service
+            slo: availability
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            (sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting", http_response_status_code=~"5.."}[5m]), "target", "$1", "service_name", "(.+)")) or sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[5m]), "target", "$1", "service_name", "(.+)")) * 0) / sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[5m]), "target", "$1", "service_name", "(.+)"))
+          labels:
+            kind: service
+            slo: availability
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            (sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting", http_response_status_code=~"5.."}[30m]), "target", "$1", "service_name", "(.+)")) or sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[30m]), "target", "$1", "service_name", "(.+)")) * 0) / sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[30m]), "target", "$1", "service_name", "(.+)"))
+          labels:
+            kind: service
+            slo: availability
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            (sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting", http_response_status_code=~"5.."}[1h]), "target", "$1", "service_name", "(.+)")) or sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[1h]), "target", "$1", "service_name", "(.+)")) * 0) / sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[1h]), "target", "$1", "service_name", "(.+)"))
+          labels:
+            kind: service
+            slo: availability
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            (sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting", http_response_status_code=~"5.."}[2h]), "target", "$1", "service_name", "(.+)")) or sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[2h]), "target", "$1", "service_name", "(.+)")) * 0) / sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[2h]), "target", "$1", "service_name", "(.+)"))
+          labels:
+            kind: service
+            slo: availability
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            (sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting", http_response_status_code=~"5.."}[6h]), "target", "$1", "service_name", "(.+)")) or sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[6h]), "target", "$1", "service_name", "(.+)")) * 0) / sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[6h]), "target", "$1", "service_name", "(.+)"))
+          labels:
+            kind: service
+            slo: availability
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[5m]), "target", "$1", "service_name", "(.+)"))
+          labels:
+            kind: service
+            slo: availability
+        - record: slo:sli_errors:rate5m
+          expr: |
+            sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting", http_response_status_code=~"5.."}[5m]), "target", "$1", "service_name", "(.+)")) or sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[5m]), "target", "$1", "service_name", "(.+)")) * 0
+          labels:
+            kind: service
+            slo: availability
+        - record: slo:objective:ratio
+          expr: |
+            0 * sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[5m]), "target", "$1", "service_name", "(.+)")) + 0.99
+          labels:
+            kind: service
+            slo: latency
+        - record: slo:sli_threshold:seconds
+          expr: |
+            0 * sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[5m]), "target", "$1", "service_name", "(.+)")) + 0.5
+          labels:
+            kind: service
+            slo: latency
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            clamp_min(1 - sum by (target) (label_replace(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting", le="0.5"}[5m]), "target", "$1", "service_name", "(.+)")) / sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[5m]), "target", "$1", "service_name", "(.+)")), 0)
+          labels:
+            kind: service
+            slo: latency
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            clamp_min(1 - sum by (target) (label_replace(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting", le="0.5"}[30m]), "target", "$1", "service_name", "(.+)")) / sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[30m]), "target", "$1", "service_name", "(.+)")), 0)
+          labels:
+            kind: service
+            slo: latency
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            clamp_min(1 - sum by (target) (label_replace(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting", le="0.5"}[1h]), "target", "$1", "service_name", "(.+)")) / sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[1h]), "target", "$1", "service_name", "(.+)")), 0)
+          labels:
+            kind: service
+            slo: latency
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            clamp_min(1 - sum by (target) (label_replace(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting", le="0.5"}[2h]), "target", "$1", "service_name", "(.+)")) / sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[2h]), "target", "$1", "service_name", "(.+)")), 0)
+          labels:
+            kind: service
+            slo: latency
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            clamp_min(1 - sum by (target) (label_replace(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting", le="0.5"}[6h]), "target", "$1", "service_name", "(.+)")) / sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[6h]), "target", "$1", "service_name", "(.+)")), 0)
+          labels:
+            kind: service
+            slo: latency
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[5m]), "target", "$1", "service_name", "(.+)"))
+          labels:
+            kind: service
+            slo: latency
+        - record: slo:sli_errors:rate5m
+          expr: |
+            clamp_min(sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[5m]), "target", "$1", "service_name", "(.+)")) - sum by (target) (label_replace(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting", le="0.5"}[5m]), "target", "$1", "service_name", "(.+)")), 0)
+          labels:
+            kind: service
+            slo: latency
+        - record: slo:objective:ratio
+          expr: "vector(0.995)"
+          labels:
+            kind: service
+            slo: availability
+            target: identity
+        - record: slo:sli_threshold:seconds
+          expr: "vector(0)"
+          labels:
+            kind: service
+            slo: availability
+            target: identity
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_response_status_code=~"5.."}[5m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[5m])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[5m]))
+          labels:
+            kind: service
+            slo: availability
+            target: identity
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_response_status_code=~"5.."}[30m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[30m])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[30m]))
+          labels:
+            kind: service
+            slo: availability
+            target: identity
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_response_status_code=~"5.."}[1h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[1h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[1h]))
+          labels:
+            kind: service
+            slo: availability
+            target: identity
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_response_status_code=~"5.."}[2h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[2h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[2h]))
+          labels:
+            kind: service
+            slo: availability
+            target: identity
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_response_status_code=~"5.."}[6h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[6h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[6h]))
+          labels:
+            kind: service
+            slo: availability
+            target: identity
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[5m]))
+          labels:
+            kind: service
+            slo: availability
+            target: identity
+        - record: slo:sli_errors:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_response_status_code=~"5.."}[5m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[5m])) * 0
+          labels:
+            kind: service
+            slo: availability
+            target: identity
+        - record: slo:objective:ratio
+          expr: "vector(0.99)"
+          labels:
+            kind: service
+            slo: latency
+            target: identity
+        - record: slo:sli_threshold:seconds
+          expr: "vector(2.5)"
+          labels:
+            kind: service
+            slo: latency
+            target: identity
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", le="2.5"}[5m])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[5m])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: identity
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", le="2.5"}[30m])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[30m])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: identity
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", le="2.5"}[1h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[1h])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: identity
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", le="2.5"}[2h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[2h])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: identity
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", le="2.5"}[6h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[6h])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: identity
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[5m]))
+          labels:
+            kind: service
+            slo: latency
+            target: identity
+        - record: slo:sli_errors:rate5m
+          expr: |
+            clamp_min(sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[5m])) - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", le="2.5"}[5m])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: identity
+        - record: slo:objective:ratio
+          expr: "vector(0.995)"
+          labels:
+            kind: service
+            slo: availability
+            target: payments
+        - record: slo:sli_threshold:seconds
+          expr: "vector(0)"
+          labels:
+            kind: service
+            slo: availability
+            target: payments
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_response_status_code=~"5.."}[5m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[5m])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[5m]))
+          labels:
+            kind: service
+            slo: availability
+            target: payments
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_response_status_code=~"5.."}[30m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[30m])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[30m]))
+          labels:
+            kind: service
+            slo: availability
+            target: payments
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_response_status_code=~"5.."}[1h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[1h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[1h]))
+          labels:
+            kind: service
+            slo: availability
+            target: payments
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_response_status_code=~"5.."}[2h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[2h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[2h]))
+          labels:
+            kind: service
+            slo: availability
+            target: payments
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_response_status_code=~"5.."}[6h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[6h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[6h]))
+          labels:
+            kind: service
+            slo: availability
+            target: payments
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[5m]))
+          labels:
+            kind: service
+            slo: availability
+            target: payments
+        - record: slo:sli_errors:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_response_status_code=~"5.."}[5m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[5m])) * 0
+          labels:
+            kind: service
+            slo: availability
+            target: payments
+        - record: slo:objective:ratio
+          expr: "vector(0.99)"
+          labels:
+            kind: service
+            slo: latency
+            target: payments
+        - record: slo:sli_threshold:seconds
+          expr: "vector(1)"
+          labels:
+            kind: service
+            slo: latency
+            target: payments
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", le="1"}[5m])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[5m])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: payments
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", le="1"}[30m])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[30m])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: payments
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", le="1"}[1h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[1h])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: payments
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", le="1"}[2h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[2h])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: payments
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", le="1"}[6h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[6h])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: payments
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[5m]))
+          labels:
+            kind: service
+            slo: latency
+            target: payments
+        - record: slo:sli_errors:rate5m
+          expr: |
+            clamp_min(sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[5m])) - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", le="1"}[5m])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: payments
+        - record: slo:objective:ratio
+          expr: "vector(0.995)"
+          labels:
+            kind: service
+            slo: availability
+            target: reporting
+        - record: slo:sli_threshold:seconds
+          expr: "vector(0)"
+          labels:
+            kind: service
+            slo: availability
+            target: reporting
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_response_status_code=~"5.."}[5m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[5m])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[5m]))
+          labels:
+            kind: service
+            slo: availability
+            target: reporting
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_response_status_code=~"5.."}[30m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[30m])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[30m]))
+          labels:
+            kind: service
+            slo: availability
+            target: reporting
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_response_status_code=~"5.."}[1h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[1h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[1h]))
+          labels:
+            kind: service
+            slo: availability
+            target: reporting
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_response_status_code=~"5.."}[2h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[2h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[2h]))
+          labels:
+            kind: service
+            slo: availability
+            target: reporting
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_response_status_code=~"5.."}[6h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[6h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[6h]))
+          labels:
+            kind: service
+            slo: availability
+            target: reporting
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[5m]))
+          labels:
+            kind: service
+            slo: availability
+            target: reporting
+        - record: slo:sli_errors:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_response_status_code=~"5.."}[5m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[5m])) * 0
+          labels:
+            kind: service
+            slo: availability
+            target: reporting
+        - record: slo:objective:ratio
+          expr: "vector(0.99)"
+          labels:
+            kind: service
+            slo: latency
+            target: reporting
+        - record: slo:sli_threshold:seconds
+          expr: "vector(1)"
+          labels:
+            kind: service
+            slo: latency
+            target: reporting
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", le="1"}[5m])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[5m])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: reporting
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", le="1"}[30m])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[30m])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: reporting
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", le="1"}[1h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[1h])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: reporting
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", le="1"}[2h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[2h])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: reporting
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", le="1"}[6h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[6h])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: reporting
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[5m]))
+          labels:
+            kind: service
+            slo: latency
+            target: reporting
+        - record: slo:sli_errors:rate5m
+          expr: |
+            clamp_min(sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[5m])) - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", le="1"}[5m])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: reporting
+        - record: slo:objective:ratio
+          expr: "vector(0.995)"
+          labels:
+            kind: journey
+            slo: availability
+            target: sign-in
+        - record: slo:sli_threshold:seconds
+          expr: "vector(0)"
+          labels:
+            kind: journey
+            slo: availability
+            target: sign-in
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*", http_response_status_code=~"5.."}[5m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[5m])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[5m]))
+          labels:
+            kind: journey
+            slo: availability
+            target: sign-in
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*", http_response_status_code=~"5.."}[30m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[30m])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[30m]))
+          labels:
+            kind: journey
+            slo: availability
+            target: sign-in
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*", http_response_status_code=~"5.."}[1h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[1h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[1h]))
+          labels:
+            kind: journey
+            slo: availability
+            target: sign-in
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*", http_response_status_code=~"5.."}[2h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[2h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[2h]))
+          labels:
+            kind: journey
+            slo: availability
+            target: sign-in
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*", http_response_status_code=~"5.."}[6h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[6h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[6h]))
+          labels:
+            kind: journey
+            slo: availability
+            target: sign-in
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[5m]))
+          labels:
+            kind: journey
+            slo: availability
+            target: sign-in
+        - record: slo:sli_errors:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*", http_response_status_code=~"5.."}[5m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[5m])) * 0
+          labels:
+            kind: journey
+            slo: availability
+            target: sign-in
+        - record: slo:objective:ratio
+          expr: "vector(0.99)"
+          labels:
+            kind: journey
+            slo: latency
+            target: sign-in
+        - record: slo:sli_threshold:seconds
+          expr: "vector(2.5)"
+          labels:
+            kind: journey
+            slo: latency
+            target: sign-in
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*", le="2.5"}[5m])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[5m])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: sign-in
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*", le="2.5"}[30m])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[30m])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: sign-in
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*", le="2.5"}[1h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[1h])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: sign-in
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*", le="2.5"}[2h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[2h])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: sign-in
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*", le="2.5"}[6h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[6h])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: sign-in
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[5m]))
+          labels:
+            kind: journey
+            slo: latency
+            target: sign-in
+        - record: slo:sli_errors:rate5m
+          expr: |
+            clamp_min(sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[5m])) - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*", le="2.5"}[5m])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: sign-in
+        - record: slo:objective:ratio
+          expr: "vector(0.995)"
+          labels:
+            kind: journey
+            slo: availability
+            target: invoicing
+        - record: slo:sli_threshold:seconds
+          expr: "vector(0)"
+          labels:
+            kind: journey
+            slo: availability
+            target: invoicing
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*", http_response_status_code=~"5.."}[5m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[5m])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[5m]))
+          labels:
+            kind: journey
+            slo: availability
+            target: invoicing
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*", http_response_status_code=~"5.."}[30m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[30m])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[30m]))
+          labels:
+            kind: journey
+            slo: availability
+            target: invoicing
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*", http_response_status_code=~"5.."}[1h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[1h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[1h]))
+          labels:
+            kind: journey
+            slo: availability
+            target: invoicing
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*", http_response_status_code=~"5.."}[2h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[2h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[2h]))
+          labels:
+            kind: journey
+            slo: availability
+            target: invoicing
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*", http_response_status_code=~"5.."}[6h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[6h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[6h]))
+          labels:
+            kind: journey
+            slo: availability
+            target: invoicing
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[5m]))
+          labels:
+            kind: journey
+            slo: availability
+            target: invoicing
+        - record: slo:sli_errors:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*", http_response_status_code=~"5.."}[5m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[5m])) * 0
+          labels:
+            kind: journey
+            slo: availability
+            target: invoicing
+        - record: slo:objective:ratio
+          expr: "vector(0.99)"
+          labels:
+            kind: journey
+            slo: latency
+            target: invoicing
+        - record: slo:sli_threshold:seconds
+          expr: "vector(1)"
+          labels:
+            kind: journey
+            slo: latency
+            target: invoicing
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*", le="1"}[5m])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[5m])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: invoicing
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*", le="1"}[30m])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[30m])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: invoicing
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*", le="1"}[1h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[1h])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: invoicing
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*", le="1"}[2h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[2h])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: invoicing
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*", le="1"}[6h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[6h])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: invoicing
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[5m]))
+          labels:
+            kind: journey
+            slo: latency
+            target: invoicing
+        - record: slo:sli_errors:rate5m
+          expr: |
+            clamp_min(sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[5m])) - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*", le="1"}[5m])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: invoicing
+        - record: slo:objective:ratio
+          expr: "vector(0.995)"
+          labels:
+            kind: journey
+            slo: availability
+            target: payments
+        - record: slo:sli_threshold:seconds
+          expr: "vector(0)"
+          labels:
+            kind: journey
+            slo: availability
+            target: payments
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*", http_response_status_code=~"5.."}[5m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[5m])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[5m]))
+          labels:
+            kind: journey
+            slo: availability
+            target: payments
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*", http_response_status_code=~"5.."}[30m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[30m])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[30m]))
+          labels:
+            kind: journey
+            slo: availability
+            target: payments
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*", http_response_status_code=~"5.."}[1h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[1h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[1h]))
+          labels:
+            kind: journey
+            slo: availability
+            target: payments
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*", http_response_status_code=~"5.."}[2h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[2h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[2h]))
+          labels:
+            kind: journey
+            slo: availability
+            target: payments
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*", http_response_status_code=~"5.."}[6h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[6h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[6h]))
+          labels:
+            kind: journey
+            slo: availability
+            target: payments
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[5m]))
+          labels:
+            kind: journey
+            slo: availability
+            target: payments
+        - record: slo:sli_errors:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*", http_response_status_code=~"5.."}[5m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[5m])) * 0
+          labels:
+            kind: journey
+            slo: availability
+            target: payments
+        - record: slo:objective:ratio
+          expr: "vector(0.99)"
+          labels:
+            kind: journey
+            slo: latency
+            target: payments
+        - record: slo:sli_threshold:seconds
+          expr: "vector(1)"
+          labels:
+            kind: journey
+            slo: latency
+            target: payments
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*", le="1"}[5m])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[5m])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: payments
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*", le="1"}[30m])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[30m])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: payments
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*", le="1"}[1h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[1h])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: payments
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*", le="1"}[2h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[2h])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: payments
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*", le="1"}[6h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[6h])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: payments
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[5m]))
+          labels:
+            kind: journey
+            slo: latency
+            target: payments
+        - record: slo:sli_errors:rate5m
+          expr: |
+            clamp_min(sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[5m])) - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*", le="1"}[5m])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: payments
+        - record: slo:objective:ratio
+          expr: "vector(0.995)"
+          labels:
+            kind: journey
+            slo: availability
+            target: bills
+        - record: slo:sli_threshold:seconds
+          expr: "vector(0)"
+          labels:
+            kind: journey
+            slo: availability
+            target: bills
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*", http_response_status_code=~"5.."}[5m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[5m])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[5m]))
+          labels:
+            kind: journey
+            slo: availability
+            target: bills
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*", http_response_status_code=~"5.."}[30m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[30m])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[30m]))
+          labels:
+            kind: journey
+            slo: availability
+            target: bills
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*", http_response_status_code=~"5.."}[1h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[1h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[1h]))
+          labels:
+            kind: journey
+            slo: availability
+            target: bills
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*", http_response_status_code=~"5.."}[2h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[2h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[2h]))
+          labels:
+            kind: journey
+            slo: availability
+            target: bills
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*", http_response_status_code=~"5.."}[6h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[6h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[6h]))
+          labels:
+            kind: journey
+            slo: availability
+            target: bills
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[5m]))
+          labels:
+            kind: journey
+            slo: availability
+            target: bills
+        - record: slo:sli_errors:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*", http_response_status_code=~"5.."}[5m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[5m])) * 0
+          labels:
+            kind: journey
+            slo: availability
+            target: bills
+        - record: slo:objective:ratio
+          expr: "vector(0.99)"
+          labels:
+            kind: journey
+            slo: latency
+            target: bills
+        - record: slo:sli_threshold:seconds
+          expr: "vector(1)"
+          labels:
+            kind: journey
+            slo: latency
+            target: bills
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*", le="1"}[5m])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[5m])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: bills
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*", le="1"}[30m])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[30m])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: bills
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*", le="1"}[1h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[1h])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: bills
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*", le="1"}[2h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[2h])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: bills
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*", le="1"}[6h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[6h])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: bills
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[5m]))
+          labels:
+            kind: journey
+            slo: latency
+            target: bills
+        - record: slo:sli_errors:rate5m
+          expr: |
+            clamp_min(sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[5m])) - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*", le="1"}[5m])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: bills
+        - record: slo:objective:ratio
+          expr: "vector(0.995)"
+          labels:
+            kind: journey
+            slo: availability
+            target: reports
+        - record: slo:sli_threshold:seconds
+          expr: "vector(0)"
+          labels:
+            kind: journey
+            slo: availability
+            target: reports
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*", http_response_status_code=~"5.."}[5m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[5m])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[5m]))
+          labels:
+            kind: journey
+            slo: availability
+            target: reports
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*", http_response_status_code=~"5.."}[30m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[30m])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[30m]))
+          labels:
+            kind: journey
+            slo: availability
+            target: reports
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*", http_response_status_code=~"5.."}[1h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[1h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[1h]))
+          labels:
+            kind: journey
+            slo: availability
+            target: reports
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*", http_response_status_code=~"5.."}[2h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[2h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[2h]))
+          labels:
+            kind: journey
+            slo: availability
+            target: reports
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*", http_response_status_code=~"5.."}[6h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[6h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[6h]))
+          labels:
+            kind: journey
+            slo: availability
+            target: reports
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[5m]))
+          labels:
+            kind: journey
+            slo: availability
+            target: reports
+        - record: slo:sli_errors:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*", http_response_status_code=~"5.."}[5m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[5m])) * 0
+          labels:
+            kind: journey
+            slo: availability
+            target: reports
+        - record: slo:objective:ratio
+          expr: "vector(0.99)"
+          labels:
+            kind: journey
+            slo: latency
+            target: reports
+        - record: slo:sli_threshold:seconds
+          expr: "vector(1)"
+          labels:
+            kind: journey
+            slo: latency
+            target: reports
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*", le="1"}[5m])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[5m])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: reports
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*", le="1"}[30m])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[30m])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: reports
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*", le="1"}[1h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[1h])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: reports
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*", le="1"}[2h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[2h])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: reports
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*", le="1"}[6h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[6h])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: reports
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[5m]))
+          labels:
+            kind: journey
+            slo: latency
+            target: reports
+        - record: slo:sli_errors:rate5m
+          expr: |
+            clamp_min(sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[5m])) - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*", le="1"}[5m])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: reports
+        - record: slo:objective:ratio
+          expr: "vector(0.995)"
+          labels:
+            kind: journey
+            slo: availability
+            target: browse
+        - record: slo:sli_threshold:seconds
+          expr: "vector(0)"
+          labels:
+            kind: journey
+            slo: availability
+            target: browse
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity", http_response_status_code=~"5.."}[5m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[5m])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[5m]))
+          labels:
+            kind: journey
+            slo: availability
+            target: browse
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity", http_response_status_code=~"5.."}[30m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[30m])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[30m]))
+          labels:
+            kind: journey
+            slo: availability
+            target: browse
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity", http_response_status_code=~"5.."}[1h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[1h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[1h]))
+          labels:
+            kind: journey
+            slo: availability
+            target: browse
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity", http_response_status_code=~"5.."}[2h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[2h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[2h]))
+          labels:
+            kind: journey
+            slo: availability
+            target: browse
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity", http_response_status_code=~"5.."}[6h])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[6h])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[6h]))
+          labels:
+            kind: journey
+            slo: availability
+            target: browse
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[5m]))
+          labels:
+            kind: journey
+            slo: availability
+            target: browse
+        - record: slo:sli_errors:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity", http_response_status_code=~"5.."}[5m])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[5m])) * 0
+          labels:
+            kind: journey
+            slo: availability
+            target: browse
+        - record: slo:objective:ratio
+          expr: "vector(0.99)"
+          labels:
+            kind: journey
+            slo: latency
+            target: browse
+        - record: slo:sli_threshold:seconds
+          expr: "vector(0.5)"
+          labels:
+            kind: journey
+            slo: latency
+            target: browse
+        - record: slo:sli_error:ratio_rate5m
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity", le="0.5"}[5m])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[5m])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: browse
+        - record: slo:sli_error:ratio_rate30m
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity", le="0.5"}[30m])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[30m])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: browse
+        - record: slo:sli_error:ratio_rate1h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity", le="0.5"}[1h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[1h])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: browse
+        - record: slo:sli_error:ratio_rate2h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity", le="0.5"}[2h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[2h])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: browse
+        - record: slo:sli_error:ratio_rate6h
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity", le="0.5"}[6h])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[6h])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: browse
+        - record: slo:sli_requests:rate5m
+          expr: |
+            sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[5m]))
+          labels:
+            kind: journey
+            slo: latency
+            target: browse
+        - record: slo:sli_errors:rate5m
+          expr: |
+            clamp_min(sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[5m])) - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity", le="0.5"}[5m])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: browse
+    - name: deus-slo-sli-long
+      interval: 5m
+      rules:
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            (sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting", http_response_status_code=~"5.."}[1d]), "target", "$1", "service_name", "(.+)")) or sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[1d]), "target", "$1", "service_name", "(.+)")) * 0) / sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[1d]), "target", "$1", "service_name", "(.+)"))
+          labels:
+            kind: service
+            slo: availability
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            (sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting", http_response_status_code=~"5.."}[3d]), "target", "$1", "service_name", "(.+)")) or sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[3d]), "target", "$1", "service_name", "(.+)")) * 0) / sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[3d]), "target", "$1", "service_name", "(.+)"))
+          labels:
+            kind: service
+            slo: availability
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            clamp_min(1 - sum by (target) (label_replace(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting", le="0.5"}[1d]), "target", "$1", "service_name", "(.+)")) / sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[1d]), "target", "$1", "service_name", "(.+)")), 0)
+          labels:
+            kind: service
+            slo: latency
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            clamp_min(1 - sum by (target) (label_replace(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting", le="0.5"}[3d]), "target", "$1", "service_name", "(.+)")) / sum by (target) (label_replace(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name!~"identity|payments|reporting"}[3d]), "target", "$1", "service_name", "(.+)")), 0)
+          labels:
+            kind: service
+            slo: latency
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_response_status_code=~"5.."}[1d])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[1d])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[1d]))
+          labels:
+            kind: service
+            slo: availability
+            target: identity
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_response_status_code=~"5.."}[3d])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[3d])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[3d]))
+          labels:
+            kind: service
+            slo: availability
+            target: identity
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", le="2.5"}[1d])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[1d])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: identity
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", le="2.5"}[3d])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity"}[3d])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: identity
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_response_status_code=~"5.."}[1d])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[1d])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[1d]))
+          labels:
+            kind: service
+            slo: availability
+            target: payments
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_response_status_code=~"5.."}[3d])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[3d])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[3d]))
+          labels:
+            kind: service
+            slo: availability
+            target: payments
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", le="1"}[1d])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[1d])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: payments
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", le="1"}[3d])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments"}[3d])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: payments
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_response_status_code=~"5.."}[1d])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[1d])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[1d]))
+          labels:
+            kind: service
+            slo: availability
+            target: reporting
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_response_status_code=~"5.."}[3d])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[3d])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[3d]))
+          labels:
+            kind: service
+            slo: availability
+            target: reporting
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", le="1"}[1d])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[1d])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: reporting
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", le="1"}[3d])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting"}[3d])), 0)
+          labels:
+            kind: service
+            slo: latency
+            target: reporting
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*", http_response_status_code=~"5.."}[1d])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[1d])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[1d]))
+          labels:
+            kind: journey
+            slo: availability
+            target: sign-in
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*", http_response_status_code=~"5.."}[3d])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[3d])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[3d]))
+          labels:
+            kind: journey
+            slo: availability
+            target: sign-in
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*", le="2.5"}[1d])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[1d])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: sign-in
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*", le="2.5"}[3d])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="identity", http_request_method="POST", http_route="/api/identity/auth/*"}[3d])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: sign-in
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*", http_response_status_code=~"5.."}[1d])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[1d])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[1d]))
+          labels:
+            kind: journey
+            slo: availability
+            target: invoicing
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*", http_response_status_code=~"5.."}[3d])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[3d])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[3d]))
+          labels:
+            kind: journey
+            slo: availability
+            target: invoicing
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*", le="1"}[1d])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[1d])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: invoicing
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*", le="1"}[3d])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="sales", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/sales/.*"}[3d])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: invoicing
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*", http_response_status_code=~"5.."}[1d])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[1d])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[1d]))
+          labels:
+            kind: journey
+            slo: availability
+            target: payments
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*", http_response_status_code=~"5.."}[3d])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[3d])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[3d]))
+          labels:
+            kind: journey
+            slo: availability
+            target: payments
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*", le="1"}[1d])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[1d])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: payments
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*", le="1"}[3d])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="payments", http_request_method="POST", http_route=~"/api/payments/.*"}[3d])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: payments
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*", http_response_status_code=~"5.."}[1d])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[1d])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[1d]))
+          labels:
+            kind: journey
+            slo: availability
+            target: bills
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*", http_response_status_code=~"5.."}[3d])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[3d])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[3d]))
+          labels:
+            kind: journey
+            slo: availability
+            target: bills
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*", le="1"}[1d])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[1d])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: bills
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*", le="1"}[3d])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="purchases", http_request_method=~"POST|PUT|DELETE", http_route=~"/api/purchases/.*"}[3d])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: bills
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*", http_response_status_code=~"5.."}[1d])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[1d])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[1d]))
+          labels:
+            kind: journey
+            slo: availability
+            target: reports
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*", http_response_status_code=~"5.."}[3d])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[3d])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[3d]))
+          labels:
+            kind: journey
+            slo: availability
+            target: reports
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*", le="1"}[1d])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[1d])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: reports
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*", le="1"}[3d])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", service_name="reporting", http_route=~"/api/reporting/.*"}[3d])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: reports
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity", http_response_status_code=~"5.."}[1d])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[1d])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[1d]))
+          labels:
+            kind: journey
+            slo: availability
+            target: browse
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            (sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity", http_response_status_code=~"5.."}[3d])) or sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[3d])) * 0) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[3d]))
+          labels:
+            kind: journey
+            slo: availability
+            target: browse
+        - record: slo:sli_error:ratio_rate1d
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity", le="0.5"}[1d])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[1d])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: browse
+        - record: slo:sli_error:ratio_rate3d
+          expr: |
+            clamp_min(1 - sum(rate(http_server_request_duration_seconds_bucket{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity", le="0.5"}[3d])) / sum(rate(http_server_request_duration_seconds_count{service_namespace="deus", http_route!~"/openapi.*", http_request_method="GET", http_route=~"/api/.*", service_name!="identity"}[3d])), 0)
+          labels:
+            kind: journey
+            slo: latency
+            target: browse
+    - name: deus-slo-budget
+      interval: 1m
+      rules:
+        - record: slo:sli_error:ratio_rate30d
+          expr: "sum_over_time(slo:sli_errors:rate5m[30d]) / sum_over_time(slo:sli_requests:rate5m[30d])"
+        - record: slo:error_budget_remaining:ratio
+          expr: "1 - slo:sli_error:ratio_rate30d / on (target, slo, kind) (1 - slo:objective:ratio)"
+        - record: slo:sli_window:seconds
+          expr: "count_over_time(slo:sli_requests:rate5m[30d]) * 30"
+    - name: deus-slo-alerts
+      rules:
+        - alert: DeusSLOBurnRateCritical
+          expr: |
+            (slo:sli_error:ratio_rate1h > on (target, slo, kind) (14.4 * (1 - slo:objective:ratio)) and slo:sli_error:ratio_rate5m > on (target, slo, kind) (14.4 * (1 - slo:objective:ratio))) or (slo:sli_error:ratio_rate6h > on (target, slo, kind) (6 * (1 - slo:objective:ratio)) and slo:sli_error:ratio_rate30m > on (target, slo, kind) (6 * (1 - slo:objective:ratio)))
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ $labels.target }} ({{ $labels.kind }}): {{ $labels.slo }} SLO is burning its error budget fast"
+            description: |
+              {{ $value | humanizePercentage }} of requests miss the {{ $labels.slo }} SLI. Start from Deus — SLO Overview, then Deus — Service of the failing service: its error logs and traces.
+            runbook_url: |
+              https://github.com/alice101-dev/victoriastack-observability-platform/blob/main/docs/runbooks/deus.md#deussloburnratecritical
+        - alert: DeusSLOBurnRateWarning
+          expr: |
+            (slo:sli_error:ratio_rate1d > on (target, slo, kind) (3 * (1 - slo:objective:ratio)) and slo:sli_error:ratio_rate2h > on (target, slo, kind) (3 * (1 - slo:objective:ratio))) or (slo:sli_error:ratio_rate3d > on (target, slo, kind) (1 * (1 - slo:objective:ratio)) and slo:sli_error:ratio_rate6h > on (target, slo, kind) (1 * (1 - slo:objective:ratio)))
+          labels:
+            severity: warning
+          annotations:
+            summary: |
+              {{ $labels.target }} ({{ $labels.kind }}): {{ $labels.slo }} SLO error budget is spent faster than planned
+            description: "{{ $value | humanizePercentage }} of requests miss the {{ $labels.slo }} SLI over the long window."
+            runbook_url: |
+              https://github.com/alice101-dev/victoriastack-observability-platform/blob/main/docs/runbooks/deus.md#deussloburnratewarning
+    - name: deus
+      rules:
+        - alert: DeusServiceDown
+          expr: |
+            (max by (namespace, deployment) (kube_deployment_status_replicas_available{namespace=~"(.+-)?deus"})) * on (namespace, deployment) group_left () max by (namespace, deployment) (kube_deployment_labels{namespace=~"(.+-)?deus", label_app_kubernetes_io_part_of="deus"}) == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "{{ $labels.deployment }} has no available replica"
+            description: |
+              Every request to {{ $labels.deployment }} fails, and its own SLI stops moving because no request reaches it. Check the pod events, the migration Job and the startup logs.
+            runbook_url: |
+              https://github.com/alice101-dev/victoriastack-observability-platform/blob/main/docs/runbooks/deus.md#deusservicedown
+        - alert: DeusOutboxDeadEvents
+          expr: "max by (service_name) (outbox_backlog{service_namespace=\"deus\", outbox_state=\"dead\"}) > 0"
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.service_name }} has {{ $value }} outbox events that will not be retried"
+            description: |
+              The receiving service rejected these events (400, 404, 422) or they used every attempt. The documents they belong to are missing in the receiving service until someone replays or fixes them.
+            runbook_url: |
+              https://github.com/alice101-dev/victoriastack-observability-platform/blob/main/docs/runbooks/deus.md#deusoutboxdeadevents
+        - alert: DeusOutboxBacklog
+          expr: "max by (service_name) (outbox_backlog{service_namespace=\"deus\", outbox_state=\"pending\"}) > 50"
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.service_name }} has {{ $value }} outbox events waiting"
+            description: |
+              Events are written faster than they are delivered, or the receiving service is down: journals, allocations or emails arrive late.
+            runbook_url: |
+              https://github.com/alice101-dev/victoriastack-observability-platform/blob/main/docs/runbooks/deus.md#deusoutboxbacklog
+        - alert: DeusDatabasePoolExhausted
+          expr: "max by (service_name) (db_client_connection_pending_requests{service_namespace=\"deus\"}) > 0"
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ $labels.service_name }} requests wait for a database connection"
+            description: |
+              Every connection of the pool is in use for 10 minutes. Requests queue and slow down; check slow queries and DB_MAX_CONNECTIONS.
+            runbook_url: |
+              https://github.com/alice101-dev/victoriastack-observability-platform/blob/main/docs/runbooks/deus.md#deusdatabasepoolexhausted
+    - name: deus-logs
+      type: vlogs
+      interval: 5m
+      rules:
+        - alert: DeusErrorLogsSpike
+          expr: |
+            service.namespace:=deus severity_text:=ERROR | stats by (service.name) count() as error_logs | filter error_logs:>20
+          labels:
+            severity: warning
+          annotations:
+            summary: "{{ index $labels \"service.name\" }}: {{ $value }} ERROR logs in 5 minutes"
+            description: |
+              Open Deus — Logs for the service, or query VictoriaLogs: service.namespace:=deus severity_text:=ERROR
+            runbook_url: |
+              https://github.com/alice101-dev/victoriastack-observability-platform/blob/main/docs/runbooks/deus.md#deuserrorlogsspike

@@ -1,0 +1,2 @@
+requires: pyroscope
+namespace: monitoring

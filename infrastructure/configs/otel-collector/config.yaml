@@ -1,0 +1,2 @@
+requires: otel-collector
+namespace: monitoring

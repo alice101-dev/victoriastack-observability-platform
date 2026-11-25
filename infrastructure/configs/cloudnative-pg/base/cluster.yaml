@@ -1,0 +1,285 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: deus-db
+  labels:
+    app.kubernetes.io/name: deus-db
+    app.kubernetes.io/part-of: deus
+spec:
+  instances: 2
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.6-standard-trixie
+  primaryUpdateStrategy: unsupervised
+  primaryUpdateMethod: switchover
+  smartShutdownTimeout: 15
+
+  bootstrap:
+    initdb:
+      database: app
+      owner: app
+
+  affinity:
+    enablePodAntiAffinity: true
+    podAntiAffinityType: required
+    topologyKey: kubernetes.io/hostname
+
+  postgresql:
+    synchronous:
+      method: any
+      number: 1
+      dataDurability: preferred
+    parameters:
+      max_connections: "100"
+      shared_buffers: 64MB
+      effective_cache_size: 384MB
+      random_page_cost: "1.1"
+      log_min_duration_statement: 250ms
+      log_lock_waits: "on"
+      idle_in_transaction_session_timeout: 5min
+      log_checkpoints: "on"
+      pg_stat_statements.max: "1000"
+      pg_stat_statements.track: all
+
+  storage:
+    storageClass: standard-rwo
+    size: 10Gi
+
+  plugins:
+    - name: barman-cloud.cloudnative-pg.io
+      enabled: true
+      isWALArchiver: true
+      parameters:
+        barmanObjectName: deus-backup
+
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { memory: 512Mi }
+
+  managed:
+    roles:
+      - name: mcp_readonly
+        ensure: present
+        comment: Postgres MCP server (read-only diagnostics)
+        login: true
+        inherit: true
+        inRoles: [pg_monitor]
+        connectionLimit: 3
+        passwordSecret:
+          name: deus-db-mcp
+      - name: identity_migrator
+        ensure: present
+        comment: identity schema owner, used by the migration Job
+        login: true
+        inherit: true
+        connectionLimit: 3
+        passwordSecret:
+          name: deus-db-identity-migrator
+      - name: identity_app
+        ensure: present
+        comment: identity application role, data access only
+        login: true
+        inherit: true
+        connectionLimit: 15
+        passwordSecret:
+          name: deus-db-identity-app
+      - name: organization_migrator
+        ensure: present
+        comment: organization schema owner, used by the migration Job
+        login: true
+        inherit: true
+        connectionLimit: 3
+        passwordSecret:
+          name: deus-db-organization-migrator
+      - name: organization_app
+        ensure: present
+        comment: organization application role, data access only
+        login: true
+        inherit: true
+        connectionLimit: 15
+        passwordSecret:
+          name: deus-db-organization-app
+      - name: accounts_migrator
+        ensure: present
+        comment: accounts schema owner, used by the migration Job
+        login: true
+        inherit: true
+        connectionLimit: 3
+        passwordSecret:
+          name: deus-db-accounts-migrator
+      - name: accounts_app
+        ensure: present
+        comment: accounts application role, data access only
+        login: true
+        inherit: true
+        connectionLimit: 15
+        passwordSecret:
+          name: deus-db-accounts-app
+      - name: ledger_migrator
+        ensure: present
+        comment: ledger schema owner, used by the migration Job
+        login: true
+        inherit: true
+        connectionLimit: 3
+        passwordSecret:
+          name: deus-db-ledger-migrator
+      - name: ledger_app
+        ensure: present
+        comment: ledger application role, data access only
+        login: true
+        inherit: true
+        connectionLimit: 15
+        passwordSecret:
+          name: deus-db-ledger-app
+      - name: contacts_migrator
+        ensure: present
+        comment: contacts schema owner, used by the migration Job
+        login: true
+        inherit: true
+        connectionLimit: 3
+        passwordSecret:
+          name: deus-db-contacts-migrator
+      - name: contacts_app
+        ensure: present
+        comment: contacts application role, data access only
+        login: true
+        inherit: true
+        connectionLimit: 15
+        passwordSecret:
+          name: deus-db-contacts-app
+      - name: products_migrator
+        ensure: present
+        comment: products schema owner, used by the migration Job
+        login: true
+        inherit: true
+        connectionLimit: 3
+        passwordSecret:
+          name: deus-db-products-migrator
+      - name: products_app
+        ensure: present
+        comment: products application role, data access only
+        login: true
+        inherit: true
+        connectionLimit: 15
+        passwordSecret:
+          name: deus-db-products-app
+      - name: sales_migrator
+        ensure: present
+        comment: sales schema owner, used by the migration Job
+        login: true
+        inherit: true
+        connectionLimit: 3
+        passwordSecret:
+          name: deus-db-sales-migrator
+      - name: sales_app
+        ensure: present
+        comment: sales application role, data access only
+        login: true
+        inherit: true
+        connectionLimit: 15
+        passwordSecret:
+          name: deus-db-sales-app
+      - name: purchases_migrator
+        ensure: present
+        comment: purchases schema owner, used by the migration Job
+        login: true
+        inherit: true
+        connectionLimit: 3
+        passwordSecret:
+          name: deus-db-purchases-migrator
+      - name: purchases_app
+        ensure: present
+        comment: purchases application role, data access only
+        login: true
+        inherit: true
+        connectionLimit: 15
+        passwordSecret:
+          name: deus-db-purchases-app
+      - name: payments_migrator
+        ensure: present
+        comment: payments schema owner, used by the migration Job
+        login: true
+        inherit: true
+        connectionLimit: 3
+        passwordSecret:
+          name: deus-db-payments-migrator
+      - name: payments_app
+        ensure: present
+        comment: payments application role, data access only
+        login: true
+        inherit: true
+        connectionLimit: 15
+        passwordSecret:
+          name: deus-db-payments-app
+      - name: reporting_migrator
+        ensure: present
+        comment: reporting schema owner, used by the migration Job
+        login: true
+        inherit: true
+        connectionLimit: 3
+        passwordSecret:
+          name: deus-db-reporting-migrator
+      - name: reporting_app
+        ensure: present
+        comment: reporting application role, data access only
+        login: true
+        inherit: true
+        connectionLimit: 15
+        passwordSecret:
+          name: deus-db-reporting-app
+      - name: tax_migrator
+        ensure: present
+        comment: tax schema owner, used by the migration Job
+        login: true
+        inherit: true
+        connectionLimit: 3
+        passwordSecret:
+          name: deus-db-tax-migrator
+      - name: tax_app
+        ensure: present
+        comment: tax application role, data access only
+        login: true
+        inherit: true
+        connectionLimit: 15
+        passwordSecret:
+          name: deus-db-tax-app
+      - name: banking_migrator
+        ensure: present
+        comment: banking schema owner, used by the migration Job
+        login: true
+        inherit: true
+        connectionLimit: 3
+        passwordSecret:
+          name: deus-db-banking-migrator
+      - name: banking_app
+        ensure: present
+        comment: banking application role, data access only
+        login: true
+        inherit: true
+        connectionLimit: 15
+        passwordSecret:
+          name: deus-db-banking-app
+      - name: notification_migrator
+        ensure: present
+        comment: notification schema owner, used by the migration Job
+        login: true
+        inherit: true
+        connectionLimit: 3
+        passwordSecret:
+          name: deus-db-notification-migrator
+      - name: notification_app
+        ensure: present
+        comment: notification application role, data access only
+        login: true
+        inherit: true
+        connectionLimit: 15
+        passwordSecret:
+          name: deus-db-notification-app
+
+  enablePDB: true
+
+  monitoring:
+    metricsQueriesTTL: 20s
+    customQueriesConfigMap:
+      - name: cnpg-default-monitoring
+        key: queries
+      - name: deus-db-monitoring
+        key: queries.yaml

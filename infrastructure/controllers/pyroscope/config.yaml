@@ -1,0 +1,7 @@
+chart: pyroscope
+repoURL: https://grafana.github.io/helm-charts
+version: 2.4.4
+namespace: monitoring
+bucket:
+  name: profiles
+  value: pyroscope.structuredConfig.storage.gcs.bucket_name

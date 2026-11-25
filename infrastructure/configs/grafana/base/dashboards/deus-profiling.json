@@ -1,0 +1,762 @@
+{
+  "uid": "deus-profiling",
+  "title": "Deus — Profiling",
+  "description": "Where the deus services spend CPU, from the continuous profiles in Pyroscope: CPU per service, the symptoms of one service (latency, errors, CPU per pod) to pick the time range, its flame graph, two versions side by side, and the code all services share.",
+  "tags": [
+    "deus",
+    "profiling",
+    "custom"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "editable": true,
+  "graphTooltip": 1,
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "1m",
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "label": "Service",
+        "type": "query",
+        "datasource": {
+          "type": "grafana-pyroscope-datasource",
+          "uid": "Pyroscope"
+        },
+        "query": {
+          "type": "labelValue",
+          "profileTypeId": "process_cpu:cpu:nanoseconds:cpu:nanoseconds",
+          "labelName": "service_name",
+          "refId": "service"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "multi": false,
+        "includeAll": false,
+        "current": {
+          "selected": true,
+          "text": "ledger",
+          "value": "ledger"
+        }
+      },
+      {
+        "name": "version",
+        "label": "Version",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "VictoriaMetrics"
+        },
+        "hide": 0,
+        "query": {
+          "query": "query_result(sort_desc(min by (service_version) (min_over_time(timestamp(process_runtime_heap_used_bytes{service_namespace=\"deus\", service_name=\"$service\"})[$__range]))))",
+          "refId": "version"
+        },
+        "definition": "query_result(sort_desc(min by (service_version) (min_over_time(timestamp(process_runtime_heap_used_bytes{service_namespace=\"deus\", service_name=\"$service\"})[$__range]))))",
+        "regex": "/service_version=\"([^\"]+)\"/",
+        "refresh": 2,
+        "sort": 0,
+        "multi": false,
+        "includeAll": false
+      },
+      {
+        "name": "compare",
+        "label": "Compare with",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "VictoriaMetrics"
+        },
+        "hide": 0,
+        "query": {
+          "query": "query_result(sort(min by (service_version) (min_over_time(timestamp(process_runtime_heap_used_bytes{service_namespace=\"deus\", service_name=\"$service\"})[$__range]))))",
+          "refId": "compare"
+        },
+        "definition": "query_result(sort(min by (service_version) (min_over_time(timestamp(process_runtime_heap_used_bytes{service_namespace=\"deus\", service_name=\"$service\"})[$__range]))))",
+        "regex": "/service_version=\"([^\"]+)\"/",
+        "refresh": 2,
+        "sort": 0,
+        "multi": false,
+        "includeAll": false
+      },
+      {
+        "name": "pod",
+        "label": "Pod",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "VictoriaMetrics"
+        },
+        "query": {
+          "query": "label_values(process_runtime_heap_used_bytes{service_namespace=\"deus\", service_name=\"$service\", service_version=\"$version\"}, k8s_pod_name)",
+          "refId": "pod"
+        },
+        "definition": "label_values(process_runtime_heap_used_bytes{service_namespace=\"deus\", service_name=\"$service\", service_version=\"$version\"}, k8s_pod_name)",
+        "refresh": 2,
+        "sort": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".+",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      }
+    ]
+  },
+  "links": [
+    {
+      "title": "Deus dashboards",
+      "type": "dashboards",
+      "tags": [
+        "deus"
+      ],
+      "asDropdown": true,
+      "includeVars": false,
+      "keepTime": true
+    },
+    {
+      "title": "Platform dashboards",
+      "type": "dashboards",
+      "tags": [
+        "platform"
+      ],
+      "asDropdown": true,
+      "includeVars": false,
+      "keepTime": true
+    },
+    {
+      "title": "Explore traces",
+      "type": "link",
+      "url": "/explore?left={\"datasource\":\"VictoriaTraces\"}",
+      "targetBlank": true
+    },
+    {
+      "title": "Explore logs",
+      "type": "link",
+      "url": "/explore?left={\"datasource\":\"VictoriaLogs\"}",
+      "targetBlank": true
+    },
+    {
+      "title": "Deus — Service",
+      "type": "link",
+      "url": "/d/deus-service/deus-service?var-service=$service",
+      "keepTime": true
+    },
+    {
+      "title": "Deus — Traces",
+      "type": "link",
+      "url": "/d/deus-traces/deus-traces?var-service=$service",
+      "keepTime": true
+    },
+    {
+      "title": "Deus — Logs",
+      "type": "link",
+      "url": "/d/deus-logs/deus-logs?var-service=$service",
+      "keepTime": true
+    },
+    {
+      "title": "Profiles Drilldown: diff of two time ranges",
+      "type": "link",
+      "url": "/a/grafana-pyroscope-app/explore?var-dataSource=Pyroscope&var-serviceName=$service&var-profileMetricId=process_cpu:cpu:nanoseconds:cpu:nanoseconds&explorationType=diff-flame-graph",
+      "keepTime": true,
+      "targetBlank": true
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "name": "Rollouts",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "VictoriaMetrics"
+        },
+        "enable": true,
+        "iconColor": "blue",
+        "step": "1m",
+        "useValueForTime": false,
+        "expr": "(max by (namespace, replicaset, owner_name) (kube_replicaset_owner{namespace=~\"(.+-)?deus\", owner_kind=\"Deployment\"}) unless max by (namespace, replicaset, owner_name) (kube_replicaset_owner{namespace=~\"(.+-)?deus\", owner_kind=\"Deployment\"} offset 1m)",
+        "titleFormat": "Rollout {{owner_name}}",
+        "textFormat": "New ReplicaSet {{replicaset}}: the pod template changed (image, env or resources)"
+      },
+      {
+        "name": "Critical alerts",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "VictoriaMetrics"
+        },
+        "enable": true,
+        "iconColor": "red",
+        "step": "1m",
+        "useValueForTime": false,
+        "expr": "max by (alertname, target, slo, deployment) (ALERTS{alertname=~\"Deus.*\", alertstate=\"firing\", severity=\"critical\"})",
+        "titleFormat": "{{alertname}}",
+        "textFormat": "{{target}}{{deployment}} {{slo}}"
+      },
+      {
+        "name": "Node restarts",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "VictoriaMetrics"
+        },
+        "enable": true,
+        "iconColor": "purple",
+        "step": "1m",
+        "useValueForTime": false,
+        "expr": "(max by (node) (label_replace(node_boot_time_seconds, \"internal_ip\", \"$1\", \"instance\", \"(.+):[0-9]+\") * on (internal_ip) group_left (node) max by (internal_ip, node) (kube_node_info)) > max_over_time((max by (node) (label_replace(node_boot_time_seconds, \"internal_ip\", \"$1\", \"instance\", \"(.+):[0-9]+\") * on (internal_ip) group_left (node) max by (internal_ip, node) (kube_node_info)))[30m:1m] offset 1m)) * on (node) group_left (label_cloud_google_com_gke_nodepool, label_cloud_google_com_gke_provisioning) max by (node, label_cloud_google_com_gke_nodepool, label_cloud_google_com_gke_provisioning) (kube_node_labels)",
+        "titleFormat": "Node restarted: {{node}}",
+        "textFormat": "Pool {{label_cloud_google_com_gke_nodepool}} ({{label_cloud_google_com_gke_provisioning}}): spot preemption, upgrade or repair; its pods were rescheduled"
+      },
+      {
+        "name": "Container restarts",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "VictoriaMetrics"
+        },
+        "enable": true,
+        "iconColor": "orange",
+        "step": "1m",
+        "useValueForTime": false,
+        "expr": "(changes(kube_pod_container_status_restarts_total{namespace=~\"(.+-)?deus\"}[1m]) > 0) * on (namespace, pod, container) group_left (reason) max by (namespace, pod, container, reason) (kube_pod_container_status_last_terminated_reason{namespace=~\"(.+-)?deus\"})",
+        "titleFormat": "Restart {{pod}}: {{reason}}",
+        "textFormat": "Container {{container}} (OOMKilled: memory limit reached)"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "row",
+      "title": "All services — profiled CPU",
+      "collapsed": false,
+      "panels": [],
+      "id": 1,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Profiled CPU by service",
+      "description": "JavaScript CPU each service spends, from the profiles of all its pods. The largest band is where an optimisation pays most; a band that jumps after a rollout (blue annotation) is a regression to open below.",
+      "datasource": {
+        "type": "grafana-pyroscope-datasource",
+        "uid": "Pyroscope"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cores",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "drawStyle": "line",
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-pyroscope-datasource",
+            "uid": "Pyroscope"
+          },
+          "refId": "A",
+          "queryType": "metrics",
+          "profileTypeId": "process_cpu:cpu:nanoseconds:cpu:nanoseconds",
+          "labelSelector": "{service_namespace=\"deus\"}",
+          "groupBy": [
+            "service_name"
+          ],
+          "legendFormat": "{{service_name}}"
+        }
+      ],
+      "id": 2,
+      "gridPos": {
+        "x": 0,
+        "y": 1,
+        "w": 24,
+        "h": 8
+      }
+    },
+    {
+      "type": "row",
+      "title": "$service — when did it get slow?",
+      "collapsed": false,
+      "panels": [],
+      "id": 3,
+      "gridPos": {
+        "x": 0,
+        "y": 9,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "p95 latency and requests",
+      "description": "Server-side p95 response time (left) and request rate (right). Zoom into a spike: every panel below, flame graphs included, follows the selected time range.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "VictoriaMetrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "drawStyle": "line",
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "min": 0
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byFrameRefID",
+              "options": "B"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "reqps"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "VictoriaMetrics"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{service_namespace=\"deus\", service_name=\"$service\", http_route!~\"/openapi.*\"}[$__rate_interval])))",
+          "legendFormat": "p95 latency",
+          "refId": "A",
+          "range": true,
+          "instant": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "VictoriaMetrics"
+          },
+          "expr": "sum(rate(http_server_request_duration_seconds_count{service_namespace=\"deus\", service_name=\"$service\", http_route!~\"/openapi.*\"}[$__rate_interval]))",
+          "legendFormat": "requests / s",
+          "refId": "B",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "id": 4,
+      "gridPos": {
+        "x": 0,
+        "y": 10,
+        "w": 8,
+        "h": 8
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "5xx per second",
+      "description": "Server errors of $service. CPU-bound code shows as latency first; errors that line up with a CPU spike point at timeouts or exhausted pools under load.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "VictoriaMetrics"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "drawStyle": "line",
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "VictoriaMetrics"
+          },
+          "expr": "sum(rate(http_server_request_duration_seconds_count{service_namespace=\"deus\", service_name=\"$service\", http_route!~\"/openapi.*\", http_response_status_code=~\"5..\"}[$__rate_interval])) or vector(0)",
+          "legendFormat": "5xx / s",
+          "refId": "A",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "id": 5,
+      "gridPos": {
+        "x": 8,
+        "y": 10,
+        "w": 8,
+        "h": 8
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Profiled CPU by pod",
+      "description": "JavaScript CPU per pod of $service at version $version. One pod far above the others means uneven load or a hot tenant; pick it in the Pod filter to see its flame graph alone.",
+      "datasource": {
+        "type": "grafana-pyroscope-datasource",
+        "uid": "Pyroscope"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cores",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "drawStyle": "line",
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-pyroscope-datasource",
+            "uid": "Pyroscope"
+          },
+          "refId": "A",
+          "queryType": "metrics",
+          "profileTypeId": "process_cpu:cpu:nanoseconds:cpu:nanoseconds",
+          "labelSelector": "{service_namespace=\"deus\", service_name=\"$service\", service_version=\"$version\"}",
+          "groupBy": [
+            "k8s_pod_name"
+          ],
+          "legendFormat": "{{k8s_pod_name}}"
+        }
+      ],
+      "id": 6,
+      "gridPos": {
+        "x": 16,
+        "y": 10,
+        "w": 8,
+        "h": 8
+      }
+    },
+    {
+      "type": "row",
+      "title": "$service — where does the CPU go?",
+      "collapsed": false,
+      "panels": [],
+      "id": 7,
+      "gridPos": {
+        "x": 0,
+        "y": 18,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "flamegraph",
+      "title": "CPU flame graph — $service $version",
+      "description": "Every stack the profiler sampled in the selected time range, merged. Width is CPU time: the widest frames at the top are the hot functions, the frames below them are their callers. The table ranks functions by self time (spent in the function itself) and total time (including what it calls); click a row or a frame to focus on it. Anonymous functions are named by package or file and line. Only JavaScript on the main thread is sampled: waiting for the database or another service does not appear here (use the slow traces), native work such as TLS or compression does not either.",
+      "datasource": {
+        "type": "grafana-pyroscope-datasource",
+        "uid": "Pyroscope"
+      },
+      "options": {},
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-pyroscope-datasource",
+            "uid": "Pyroscope"
+          },
+          "refId": "A",
+          "queryType": "profile",
+          "profileTypeId": "process_cpu:cpu:nanoseconds:cpu:nanoseconds",
+          "labelSelector": "{service_namespace=\"deus\", service_name=\"$service\", service_version=\"$version\", k8s_pod_name=~\"${pod:regex}\"}",
+          "groupBy": []
+        }
+      ],
+      "id": 8,
+      "gridPos": {
+        "x": 0,
+        "y": 19,
+        "w": 24,
+        "h": 16
+      }
+    },
+    {
+      "type": "row",
+      "title": "$service — $version against $compare",
+      "collapsed": false,
+      "panels": [],
+      "id": 9,
+      "gridPos": {
+        "x": 0,
+        "y": 35,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "flamegraph",
+      "title": "CPU flame graph — $version",
+      "description": "Profiles of one version of $service in the selected time range. Put the release after a regression in Version and the one before it in Compare with: a frame that is wider on the left is code the new release spends more CPU in. The Profiles Drilldown link at the top draws the difference as one diff flame graph.",
+      "datasource": {
+        "type": "grafana-pyroscope-datasource",
+        "uid": "Pyroscope"
+      },
+      "options": {},
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-pyroscope-datasource",
+            "uid": "Pyroscope"
+          },
+          "refId": "A",
+          "queryType": "profile",
+          "profileTypeId": "process_cpu:cpu:nanoseconds:cpu:nanoseconds",
+          "labelSelector": "{service_namespace=\"deus\", service_name=\"$service\", service_version=\"$version\"}",
+          "groupBy": []
+        }
+      ],
+      "id": 10,
+      "gridPos": {
+        "x": 0,
+        "y": 36,
+        "w": 12,
+        "h": 14
+      }
+    },
+    {
+      "type": "flamegraph",
+      "title": "CPU flame graph — $compare",
+      "description": "Profiles of one version of $service in the selected time range. Put the release after a regression in Version and the one before it in Compare with: a frame that is wider on the left is code the new release spends more CPU in. The Profiles Drilldown link at the top draws the difference as one diff flame graph.",
+      "datasource": {
+        "type": "grafana-pyroscope-datasource",
+        "uid": "Pyroscope"
+      },
+      "options": {},
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-pyroscope-datasource",
+            "uid": "Pyroscope"
+          },
+          "refId": "A",
+          "queryType": "profile",
+          "profileTypeId": "process_cpu:cpu:nanoseconds:cpu:nanoseconds",
+          "labelSelector": "{service_namespace=\"deus\", service_name=\"$service\", service_version=\"$compare\"}",
+          "groupBy": []
+        }
+      ],
+      "id": 11,
+      "gridPos": {
+        "x": 12,
+        "y": 36,
+        "w": 12,
+        "h": 14
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Profiled CPU by version",
+      "description": "CPU of $service per running version. During a rollout both appear; after it, compare the level of the new version with the old one at a similar request rate.",
+      "datasource": {
+        "type": "grafana-pyroscope-datasource",
+        "uid": "Pyroscope"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cores",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "drawStyle": "line",
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          },
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "calcs": [
+            "mean",
+            "max"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-pyroscope-datasource",
+            "uid": "Pyroscope"
+          },
+          "refId": "A",
+          "queryType": "metrics",
+          "profileTypeId": "process_cpu:cpu:nanoseconds:cpu:nanoseconds",
+          "labelSelector": "{service_namespace=\"deus\", service_name=\"$service\"}",
+          "groupBy": [
+            "service_version"
+          ],
+          "legendFormat": "{{service_version}}"
+        }
+      ],
+      "id": 12,
+      "gridPos": {
+        "x": 0,
+        "y": 50,
+        "w": 24,
+        "h": 7
+      }
+    },
+    {
+      "type": "row",
+      "title": "All services — shared code",
+      "collapsed": false,
+      "panels": [],
+      "id": 13,
+      "gridPos": {
+        "x": 0,
+        "y": 57,
+        "w": 24,
+        "h": 1
+      }
+    },
+    {
+      "type": "flamegraph",
+      "title": "CPU flame graph — all deus services",
+      "description": "The profiles of every deus service merged. Libraries every service uses (OpenTelemetry export, Drizzle, Elysia, JSON) stand out here even when each service spends little on them, which is where a fix in a shared package helps everywhere.",
+      "datasource": {
+        "type": "grafana-pyroscope-datasource",
+        "uid": "Pyroscope"
+      },
+      "options": {},
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-pyroscope-datasource",
+            "uid": "Pyroscope"
+          },
+          "refId": "A",
+          "queryType": "profile",
+          "profileTypeId": "process_cpu:cpu:nanoseconds:cpu:nanoseconds",
+          "labelSelector": "{service_namespace=\"deus\"}",
+          "groupBy": []
+        }
+      ],
+      "id": 14,
+      "gridPos": {
+        "x": 0,
+        "y": 58,
+        "w": 24,
+        "h": 14
+      }
+    }
+  ]
+}
